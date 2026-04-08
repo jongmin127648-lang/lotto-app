@@ -16,10 +16,7 @@ body {
   text-align:center;
 }
 
-h1 {
-  margin-top:20px;
-  font-weight:600;
-}
+h1 { margin-top:20px; }
 
 .card {
   background: rgba(255,255,255,0.08);
@@ -31,20 +28,16 @@ h1 {
 }
 
 button {
-  padding:12px 25px;
+  padding:12px 20px;
   border:none;
   border-radius:15px;
   background: linear-gradient(145deg, #ffd700, #ffb300);
   font-weight:bold;
   margin:5px;
   cursor:pointer;
-  font-size:16px;
-  transition:0.2s;
 }
 
-button:active {
-  transform: scale(0.95);
-}
+button:active { transform: scale(0.95); }
 
 input, select {
   padding:10px;
@@ -57,12 +50,10 @@ input, select {
 
 .ball {
   display:inline-block;
-  padding:12px 16px;
+  padding:12px;
   border-radius:50%;
-  margin:6px;
-  font-weight:bold;
-  color:black;
-  font-size:16px;
+  margin:4px;
+  font-size:14px;
   transform: scale(0);
   animation: pop 0.5s forwards;
 }
@@ -73,13 +64,24 @@ input, select {
   100% { transform: scale(1); }
 }
 
-.loading {
-  font-size:20px;
-  animation: blink 0.8s infinite;
+.number-grid {
+  display:grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap:5px;
+  margin-top:10px;
 }
 
-@keyframes blink {
-  50% { opacity:0.3; }
+.num-btn {
+  padding:8px;
+  border-radius:10px;
+  background:#3a3a3c;
+  cursor:pointer;
+}
+
+.num-btn.active {
+  background:#ffcc00;
+  color:black;
+  font-weight:bold;
 }
 </style>
 </head>
@@ -105,13 +107,15 @@ input, select {
   <button onclick="reset()">초기화</button>
 </div>
 
+<!-- 🎯 번호 선택 UI -->
+<div class="card">
+  <h3>🎯 번호 선택 (최대 5개)</h3>
+  <div class="number-grid" id="grid"></div>
+</div>
+
 <div class="card" id="today"></div>
 <div class="card" id="result"></div>
 <div class="card" id="history"></div>
-
-<div style="margin:30px; opacity:0.6; font-size:14px;">
-  💡 당첨되서 퇴사하자~<br>
-</div>
 
 <script>
 function getColor(n){
@@ -120,6 +124,31 @@ function getColor(n){
   if(n<=30) return "#ff7272";
   if(n<=40) return "#aaa";
   return "#b0d840";
+}
+
+// 🎯 번호 선택
+let selected = [];
+
+function createGrid(){
+  let html="";
+  for(let i=1;i<=45;i++){
+    html+=`<div class="num-btn" onclick="toggleNum(${i}, this)">${i}</div>`;
+  }
+  document.getElementById("grid").innerHTML=html;
+}
+
+function toggleNum(n, el){
+  if(selected.includes(n)){
+    selected = selected.filter(x=>x!==n);
+    el.classList.remove("active");
+  }else{
+    if(selected.length >=5){
+      alert("최대 5개까지 선택");
+      return;
+    }
+    selected.push(n);
+    el.classList.add("active");
+  }
 }
 
 // 🎯 오늘 추천
@@ -140,13 +169,11 @@ function todayPick(){
 
 // 📜 기록
 let history=[];
-
 function saveHistory(nums){
   history.unshift(nums);
   if(history.length>10) history.pop();
 
   let html="<h3>📜 최근 생성 기록</h3>";
-
   history.forEach((h,i)=>{
     html+=`${i+1}: ${h.join(", ")}<br>`;
   });
@@ -154,25 +181,35 @@ function saveHistory(nums){
   document.getElementById("history").innerHTML=html;
 }
 
+// 🎲 생성
 function generate(){
   let count=document.getElementById("count").value;
   let fixedInput=document.getElementById("fixed").value;
-  let fixed=fixedInput.split(",").map(n=>parseInt(n)).filter(n=>!isNaN(n));
 
-  document.getElementById("result").innerHTML="<div class='loading'>🎰 생성중...</div>";
+  let fixed=fixedInput.split(",")
+    .map(n=>parseInt(n))
+    .filter(n=>!isNaN(n));
+
+  let finalFixed = [...new Set([...fixed, ...selected])];
+
+  if(finalFixed.length >5){
+    alert("고정 번호는 최대 5개");
+    return;
+  }
+
+  document.getElementById("result").innerHTML="🎰 생성중...";
 
   setTimeout(()=>{
     let output="";
 
     for(let i=0;i<count;i++){
-      let nums=[...fixed];
+      let nums=[...finalFixed];
 
       while(nums.length<6){
         let n=Math.floor(Math.random()*45)+1;
         if(!nums.includes(n)) nums.push(n);
       }
 
-      nums=nums.slice(0,6);
       nums.sort((a,b)=>a-b);
 
       let balls = nums.map((n,i)=>
@@ -190,10 +227,15 @@ function generate(){
 }
 
 function reset(){
+  selected=[];
+  document.querySelectorAll(".num-btn").forEach(el=>el.classList.remove("active"));
   document.getElementById("result").innerHTML="";
 }
 
-window.onload = todayPick;
+window.onload = ()=>{
+  todayPick();
+  createGrid();
+};
 </script>
 
 </body>
