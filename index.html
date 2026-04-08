@@ -161,6 +161,17 @@ input, select{
   transform:scale(1);
   transition:all 0.2s ease;
 }
+
+/* 🔥 🔥 새 추가: 리프레시 효과 */
+.refresh{
+  animation:refreshAnim 0.35s ease;
+}
+
+@keyframes refreshAnim{
+  0%{transform:scale(1); filter:blur(0);}
+  40%{transform:scale(0.98); filter:blur(2px);}
+  100%{transform:scale(1); filter:blur(0);}
+}
 </style>
 </head>
 
@@ -169,7 +180,7 @@ input, select{
 <!-- 🔥 상단 클릭 시 초기화 -->
 <div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
 
-<!-- 🔥 토스트 -->
+<!-- 🔥 토스트 (유지하지만 안씀) -->
 <div id="toast" class="toast"></div>
 
 <div class="container">
@@ -243,7 +254,7 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 🔥 토스트 */
+/* 🔥 토스트 (유지 but 미사용) */
 function showToast(msg){
   const toast=document.getElementById("toast");
   toast.innerText=msg;
@@ -254,13 +265,12 @@ function showToast(msg){
   },2000);
 }
 
-/* 🔥 고정번호 검증 */
+/* 🔥 검증 */
 function validateFixed(){
   let input=document.getElementById("fixed");
   let value=input.value;
 
   if(/[^0-9, ]/.test(value)){
-    showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
     input.value=value.replace(/[^0-9, ]/g,'');
     return;
   }
@@ -271,9 +281,7 @@ function validateFixed(){
 
   for(let n of nums){
     let num=parseInt(n);
-
     if(isNaN(num) || num<1 || num>45){
-      showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
       return;
     }
   }
@@ -335,14 +343,15 @@ function generate(){
   },500);
 }
 
-/* 🔥 부드러운 초기화 */
+/* 🔥 ⭐ 핵심 수정: 앱바 클릭 리프레시 */
 function resetApp(){
 
-  showToast("🔄 초기화 완료");
+  vibrate();
 
   const container=document.querySelector(".container");
 
-  container.classList.add("fade-out");
+  // 🔥 앱 느낌 리프레시 애니메이션
+  container.classList.add("refresh");
 
   setTimeout(()=>{
 
@@ -351,10 +360,9 @@ function resetApp(){
     document.getElementById("fixedCount").value="0";
     document.getElementById("result").innerHTML="";
 
-    container.classList.remove("fade-out");
-    container.classList.add("fade-in");
+    container.classList.remove("refresh");
 
-  },200);
+  },350);
 }
 
 renderHistory();
