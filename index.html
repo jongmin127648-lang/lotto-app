@@ -25,14 +25,13 @@ body {
 }
 
 button {
-  padding:12px 25px;
+  padding:12px 20px;
   border:none;
   border-radius:10px;
   background:#ffcc00;
   font-weight:bold;
   margin:5px;
   cursor:pointer;
-  font-size:16px;
 }
 
 input, select {
@@ -49,7 +48,6 @@ input, select {
   margin:5px;
   font-weight:bold;
   color:black;
-  font-size:16px;
 }
 
 .loading {
@@ -82,6 +80,11 @@ input, select {
 
   <button onclick="generate()">번호 생성</button>
   <button onclick="reset()">초기화</button>
+
+  <br><br>
+
+  <button onclick="loadRealData()">📡 데이터 불러오기</button>
+  <button onclick="aiPick()">🤖 AI 추천</button>
 </div>
 
 <div class="card" id="result"></div>
@@ -128,6 +131,73 @@ function generate(){
 
 function reset(){
   document.getElementById("result").innerHTML="";
+}
+
+// ===== 실제 데이터 =====
+let realData = [];
+
+async function loadRealData(){
+  try{
+    document.getElementById("result").innerHTML="<div class='loading'>📡 데이터 불러오는 중...</div>";
+
+    let results = [];
+
+    for(let i=1100; i>1080; i--){
+      let res = await fetch(`https://api.allorigins.win/raw?url=https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${i}`);
+      let data = await res.json();
+
+      if(data.returnValue==="success"){
+        results.push([
+          data.drwtNo1,
+          data.drwtNo2,
+          data.drwtNo3,
+          data.drwtNo4,
+          data.drwtNo5,
+          data.drwtNo6
+        ]);
+      }
+    }
+
+    realData = results;
+    document.getElementById("result").innerHTML="✅ 데이터 로딩 완료 (20회)";
+  }catch(e){
+    alert("데이터 불러오기 실패");
+  }
+}
+
+// ===== AI 추천 =====
+function aiPick(){
+  if(realData.length === 0){
+    alert("먼저 데이터 불러오기 버튼 눌러주세요");
+    return;
+  }
+
+  let count = {};
+
+  realData.forEach(nums=>{
+    nums.forEach(n=>{
+      count[n] = (count[n]||0)+1;
+    });
+  });
+
+  let sorted = Object.entries(count)
+    .sort((a,b)=>b[1]-a[1])
+    .map(x=>parseInt(x[0]));
+
+  let result = [];
+
+  result.push(...sorted.slice(0,3));
+
+  while(result.length<6){
+    let n=Math.floor(Math.random()*45)+1;
+    if(!result.includes(n)) result.push(n);
+  }
+
+  result.sort((a,b)=>a-b);
+
+  let balls = result.map(n=>`<span class="ball" style="background:${getColor(n)}">${n}</span>`).join("");
+
+  document.getElementById("result").innerHTML = "<h3>🤖 AI 추천 번호</h3>"+balls;
 }
 </script>
 
