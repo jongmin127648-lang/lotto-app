@@ -14,7 +14,30 @@ body{
   color:white;
 }
 
-/* 🔥 상단 */
+/* 🔥 토스트 메시지 */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(255,0,0,0.85);
+  color:white;
+  padding:12px 18px;
+  border-radius:12px;
+  font-size:14px;
+  display:none;
+  z-index:9999;
+  animation:fade 2s ease;
+}
+
+@keyframes fade{
+  0%{opacity:0; transform:translateX(-50%) translateY(10px);}
+  10%{opacity:1;}
+  80%{opacity:1;}
+  100%{opacity:0;}
+}
+
+/* 기존 스타일 */
 .appbar{
   position:sticky;
   top:0;
@@ -24,32 +47,19 @@ body{
   font-size:18px;
   font-weight:bold;
   text-align:center;
-  border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-/* 🔥 컨테이너 */
-.container{
-  padding:15px;
-  padding-bottom:40px;
-}
+.container{ padding:15px; }
 
-/* 🔥 카드 */
 .card{
   background:rgba(255,255,255,0.06);
   border-radius:18px;
   padding:18px;
   margin-bottom:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
-/* 🔥 라벨 */
-.label{
-  font-size:13px;
-  opacity:0.7;
-  margin-bottom:6px;
-}
+.label{ font-size:13px; opacity:0.7; margin-bottom:6px; }
 
-/* 🔥 입력 */
 input, select{
   width:100%;
   box-sizing:border-box;
@@ -62,32 +72,18 @@ input, select{
   margin-top:6px;
 }
 
-/* 🔥 버튼 */
 .btn{
   width:100%;
   padding:14px;
   margin-top:14px;
   border:none;
   border-radius:14px;
-  font-size:14px;
   font-weight:bold;
-  color:black;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
-  box-shadow:0 10px 20px rgba(0,0,0,0.3);
 }
 
-.btn:active{
-  transform:scale(0.97);
-}
+.result{ display:flex; flex-direction:column; gap:10px; }
 
-/* 🔥 결과 */
-.result{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* 🔥 줄 */
 .line{
   background:rgba(255,255,255,0.05);
   padding:12px;
@@ -97,7 +93,6 @@ input, select{
   align-items:center;
 }
 
-/* 🔥 공 */
 .ball{
   width:34px;
   height:34px;
@@ -105,29 +100,7 @@ input, select{
   border-radius:50%;
   text-align:center;
   margin:4px;
-  font-size:14px;
   font-weight:bold;
-  animation:pop 0.3s ease;
-}
-
-@keyframes pop{
-  0%{transform:scale(0);}
-  70%{transform:scale(1.2);}
-  100%{transform:scale(1);}
-}
-
-/* 🔥 기록 */
-.history{
-  font-size:13px;
-  opacity:0.8;
-  line-height:1.6;
-}
-
-/* 🔥 로딩 */
-.loading{
-  text-align:center;
-  padding:20px;
-  opacity:0.7;
 }
 </style>
 </head>
@@ -136,133 +109,99 @@ input, select{
 
 <div class="appbar">🎲 로또 생성기</div>
 
+<!-- 🔥 토스트 -->
+<div id="toast" class="toast"></div>
+
 <div class="container">
 
-  <!-- 🔥 설정 -->
   <div class="card">
-    <div class="label">로또 수량</div>
-    <select id="count">
-      <option value="1">1줄</option>
-      <option value="5" selected>5줄</option>
-      <option value="10">10줄</option>
-    </select>
-
-    <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed" placeholder="예: 1,2,3,4">
-
-    <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
-    <select id="fixedCount">
-      <option value="0" selected>고정 안함</option>
-      <option value="1">1줄 고정</option>
-      <option value="2">2줄 고정</option>
-      <option value="3">3줄 고정</option>
-      <option value="4">4줄 고정</option>
-      <option value="5">5줄 고정</option>
-    </select>
+    <div class="label">고정 번호</div>
+    <input id="fixed" placeholder="예: 1,2,3,4" oninput="validateFixed()">
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
 
-  <!-- 🔥 결과 -->
   <div class="card">
-    <div class="label">결과</div>
     <div id="result" class="result"></div>
-  </div>
-
-  <!-- 🔥 기록 -->
-  <div class="card">
-    <div class="label">최근 기록</div>
-    <div id="history" class="history"></div>
   </div>
 
 </div>
 
 <script>
 
-let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
+function showToast(msg){
+  let t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
 
-function saveHistory(nums){
-  history.unshift(nums);
-  if(history.length > 10) history.pop();
-  localStorage.setItem("lottoHistory", JSON.stringify(history));
-  renderHistory();
+  setTimeout(()=>{
+    t.style.display="none";
+  },2000);
 }
 
-function renderHistory(){
-  document.getElementById("history").innerHTML =
-    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
-}
+/* 🔥 입력 즉시 검증 */
+function validateFixed(){
+  let input=document.getElementById("fixed");
 
-function vibrate(){
-  if(navigator.vibrate){
-    navigator.vibrate(80);
-  }
-}
+  let nums=input.value.split(",")
+    .map(n=>n.trim())
+    .filter(n=>n!=="");
 
-function getColor(n){
-  if(n<=10) return "#fbc400";
-  if(n<=20) return "#69c8f2";
-  if(n<=30) return "#ff7272";
-  if(n<=40) return "#aaaaaa";
-  return "#b0d840";
-}
+  let filtered=[];
+  let invalid=false;
 
-function generate(){
+  for(let n of nums){
+    let num=parseInt(n);
 
-  vibrate();
-
-  let count = parseInt(document.getElementById("count").value);
-  let fixedInput = document.getElementById("fixed").value;
-  let fixedCount = parseInt(document.getElementById("fixedCount").value);
-
-  let fixed = fixedInput.split(",")
-    .map(n => parseInt(n))
-    .filter(n => !isNaN(n) && n >= 1 && n <= 45);
-
-  fixed = [...new Set(fixed)];
-
-  document.getElementById("result").innerHTML =
-    `<div class="loading">🎰 생성 중...</div>`;
-
-  setTimeout(() => {
-
-    let output = "";
-
-    for(let i=0; i<count; i++){
-
-      let nums = [];
-
-      if(i < fixedCount && fixed.length > 0){
-        nums = [...fixed];
-      }
-
-      while(nums.length < 6){
-        let n = Math.floor(Math.random() * 45) + 1;
-        if(!nums.includes(n)) nums.push(n);
-      }
-
-      nums.sort((a,b) => a-b);
-
-      let balls = nums.map(n =>
-        `<div class="ball" style="background:${getColor(n)}">${n}</div>`
-      ).join("");
-
-      output += `
-        <div class="line">
-          <div style="width:30px;opacity:0.6">${i+1}</div>
-          ${balls}
-        </div>
-      `;
-
-      saveHistory(nums);
+    if(isNaN(num) || num<1 || num>45){
+      invalid=true;
+      continue;
     }
 
-    document.getElementById("result").innerHTML = output;
+    if(!filtered.includes(num)){
+      filtered.push(num);
+    }
+  }
 
-  }, 500);
+  if(invalid){
+    showToast("⚠ 1~45 사이 숫자만 입력 가능합니다");
+  }
+
+  input.value=filtered.join(",");
 }
 
-renderHistory();
+/* 🔥 생성 */
+function generate(){
+
+  let input=document.getElementById("fixed").value;
+
+  let fixed=input.split(",")
+    .map(n=>parseInt(n))
+    .filter(n=>!isNaN(n) && n>=1 && n<=45);
+
+  fixed=[...new Set(fixed)];
+
+  if(fixed.length !== input.split(",").filter(n=>n.trim()!=="").length){
+    showToast("⚠ 잘못된 번호는 자동 제거되었습니다");
+  }
+
+  let nums=[];
+
+  while(nums.length<6){
+    let n=Math.floor(Math.random()*45)+1;
+    if(!nums.includes(n)) nums.push(n);
+  }
+
+  nums.sort((a,b)=>a-b);
+
+  let balls=nums.map(n=>
+    `<div class="ball">${n}</div>`
+  ).join("");
+
+  document.getElementById("result").innerHTML=`
+    <div class="line">${balls}</div>
+  `;
+}
 
 </script>
 
