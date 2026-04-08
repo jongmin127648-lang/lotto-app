@@ -129,12 +129,30 @@ input, select{
   padding:20px;
   opacity:0.7;
 }
+
+/* 🔥 토스트 메시지 */
+.toast{
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(255,0,0,0.9);
+  color:white;
+  padding:12px 18px;
+  border-radius:12px;
+  font-size:14px;
+  display:none;
+  z-index:9999;
+}
 </style>
 </head>
 
 <body>
 
 <div class="appbar">🎲 로또 생성기</div>
+
+<!-- 🔥 토스트 -->
+<div id="toast" class="toast"></div>
 
 <div class="container">
 
@@ -148,7 +166,7 @@ input, select{
     </select>
 
     <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed" placeholder="예: 1,2,3,4">
+    <input id="fixed" placeholder="예: 1,2,3,4" oninput="validateFixed()">
 
     <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
     <select id="fixedCount">
@@ -207,47 +225,85 @@ function getColor(n){
   return "#b0d840";
 }
 
+/* 🔥 토스트 */
+function showToast(msg){
+  const toast=document.getElementById("toast");
+  toast.innerText=msg;
+  toast.style.display="block";
+
+  setTimeout(()=>{
+    toast.style.display="none";
+  },2000);
+}
+
+/* 🔥 고정번호 검증 */
+function validateFixed(){
+  let input=document.getElementById("fixed");
+  let value=input.value;
+
+  // 문자/특수문자 차단
+  if(/[^0-9, ]/.test(value)){
+    showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
+    input.value=value.replace(/[^0-9, ]/g,'');
+    return;
+  }
+
+  let nums=value.split(",")
+    .map(n=>n.trim())
+    .filter(n=>n!=="");
+
+  for(let n of nums){
+    let num=parseInt(n);
+
+    if(isNaN(num) || num<1 || num>45){
+      showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
+      return;
+    }
+  }
+}
+
+/* 🔥 생성 */
 function generate(){
 
   vibrate();
 
-  let count = parseInt(document.getElementById("count").value);
-  let fixedInput = document.getElementById("fixed").value;
-  let fixedCount = parseInt(document.getElementById("fixedCount").value);
+  let count=parseInt(document.getElementById("count").value);
+  let fixedInput=document.getElementById("fixed").value;
+  let fixedCount=parseInt(document.getElementById("fixedCount").value);
 
-  let fixed = fixedInput.split(",")
-    .map(n => parseInt(n))
-    .filter(n => !isNaN(n) && n >= 1 && n <= 45);
+  let fixed=fixedInput.split(",")
+    .map(n=>parseInt(n))
+    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
 
-  fixed = [...new Set(fixed)];
+  fixed=[...new Set(fixed)];
 
-  document.getElementById("result").innerHTML =
+  document.getElementById("result").innerHTML=
     `<div class="loading">🎰 생성 중...</div>`;
 
-  setTimeout(() => {
+  setTimeout(()=>{
 
-    let output = "";
+    let output="";
 
-    for(let i=0; i<count; i++){
+    for(let i=0;i<count;i++){
 
-      let nums = [];
+      let nums=[];
 
-      if(i < fixedCount && fixed.length > 0){
-        nums = [...fixed];
+      if(i<fixedCount && fixed.length>0){
+        nums=[...fixed];
       }
 
-      while(nums.length < 6){
-        let n = Math.floor(Math.random() * 45) + 1;
+      while(nums.length<6){
+        let n=Math.floor(Math.random()*45)+1;
         if(!nums.includes(n)) nums.push(n);
       }
 
-      nums.sort((a,b) => a-b);
+      nums.sort((a,b)=>a-b);
 
-      let balls = nums.map(n =>
+      let balls=nums.map(n=>
         `<div class="ball" style="background:${getColor(n)}">${n}</div>`
       ).join("");
 
-      output += `
+      output+=`
         <div class="line">
           <div style="width:30px;opacity:0.6">${i+1}</div>
           ${balls}
@@ -257,9 +313,9 @@ function generate(){
       saveHistory(nums);
     }
 
-    document.getElementById("result").innerHTML = output;
+    document.getElementById("result").innerHTML=output;
 
-  }, 500);
+  },500);
 }
 
 renderHistory();
