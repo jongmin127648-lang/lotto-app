@@ -72,6 +72,15 @@ input, select {
 @keyframes blink {
   50% { opacity:0.3; }
 }
+
+/* 🔥 추가: 고정 입력 + 선택 한 줄 배치 */
+.fixed-row {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
 </style>
 </head>
 
@@ -86,21 +95,21 @@ input, select {
     <option value="10">10줄</option>
   </select>
 
-  <br>
+  <br><br>
 
-  <input id="fixed" placeholder="고정 번호 (최대 5개, 예: 1,2,3)">
-
-  <br>
-
-  <!-- 🔥 고정 줄 개수 선택 -->
-  <select id="fixedCount">
-    <option value="0">고정 안함</option>
-    <option value="1" selected>1줄 고정</option>
-    <option value="2">2줄 고정</option>
-    <option value="3">3줄 고정</option>
-    <option value="4">4줄 고정</option>
-    <option value="5">5줄 고정</option>
-  </select>
+  <!-- 🔥 고정번호 + 고정줄 같은 줄 -->
+  <div class="fixed-row">
+    <input id="fixed" placeholder="고정 번호 (최대 6개, 예: 1,2,3)">
+    
+    <select id="fixedCount">
+      <option value="0">고정 안함</option>
+      <option value="1" selected>1줄 고정</option>
+      <option value="2">2줄 고정</option>
+      <option value="3">3줄 고정</option>
+      <option value="4">4줄 고정</option>
+      <option value="5">5줄 고정</option>
+    </select>
+  </div>
 
   <br>
 
@@ -126,12 +135,8 @@ function getColor(n){
   return "#b0d840";
 }
 
-// 🎯 오늘 추천
 function todayPick(){
-  // 👉 랜덤 이름 목록
   const names = ["송하영", "박지원", "이채영", "이나경", "백지헌", "승봉 도민"];
-
-  // 👉 랜덤 이름 선택
   const randomName = names[Math.floor(Math.random() * names.length)];
 
   let nums=[];
@@ -145,12 +150,10 @@ function todayPick(){
     `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
   ).join("");
 
-  // 👉 이름 포함 출력
   document.getElementById("today").innerHTML=
     `<h3>🎯 ${randomName} 추천 번호</h3>` + balls;
 }
 
-// 📜 기록
 let history=[];
 function saveHistory(nums){
   history.unshift(nums);
@@ -164,7 +167,6 @@ function saveHistory(nums){
   document.getElementById("history").innerHTML=html;
 }
 
-// 🎲 생성
 function generate(){
   let count=parseInt(document.getElementById("count").value);
   let fixedInput=document.getElementById("fixed").value;
@@ -176,8 +178,9 @@ function generate(){
 
   fixed = [...new Set(fixed)];
 
-  if(fixed.length >5){
-    alert("고정 번호는 최대 5개까지 가능합니다");
+  // 🔥 변경: 최대 6개
+  if(fixed.length > 6){
+    alert("고정 번호는 최대 6개까지 가능합니다");
     return;
   }
 
@@ -189,7 +192,6 @@ function generate(){
     for(let i=0;i<count;i++){
       let nums=[];
 
-      // 🔥 고정 줄 개수만큼 적용
       if(i < fixedCount && fixed.length > 0){
         nums = [...fixed];
       }
@@ -206,7 +208,6 @@ function generate(){
       ).join("");
 
       output+=`<div>${i+1}번: ${balls}</div>`;
-
       saveHistory(nums);
     }
 
@@ -219,7 +220,7 @@ function reset(){
   document.getElementById("result").innerHTML="";
 }
 
-window.onload = todayPick;
+window.onload = todayPick;S
 </script>
 
 </body>
