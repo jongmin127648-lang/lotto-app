@@ -10,51 +10,67 @@
 <style>
 body {
   margin:0;
-  font-family: 'Segoe UI';
-  background: linear-gradient(135deg, #1f1f1f, #2e2e2e);
+  font-family: -apple-system, BlinkMacSystemFont;
+  background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
   color:white;
   text-align:center;
 }
 
+h1 {
+  margin-top:20px;
+  font-weight:600;
+}
+
 .card {
-  background: rgba(255,255,255,0.05);
-  backdrop-filter: blur(10px);
-  margin:20px;
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(20px);
+  margin:15px;
   padding:20px;
-  border-radius:15px;
+  border-radius:25px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 button {
   padding:12px 25px;
   border:none;
-  border-radius:10px;
-  background:#ffcc00;
+  border-radius:15px;
+  background: linear-gradient(145deg, #ffd700, #ffb300);
   font-weight:bold;
   margin:5px;
   cursor:pointer;
   font-size:16px;
+  transition:0.2s;
 }
 
-button:hover {
-  transform: scale(1.05);
-  transition: 0.2s;
+button:active {
+  transform: scale(0.95);
 }
 
 input, select {
   padding:10px;
-  border-radius:10px;
+  border-radius:12px;
   border:none;
   margin:5px;
+  background:#3a3a3c;
+  color:white;
 }
 
 .ball {
   display:inline-block;
   padding:12px 16px;
   border-radius:50%;
-  margin:5px;
+  margin:6px;
   font-weight:bold;
   color:black;
   font-size:16px;
+  transform: scale(0);
+  animation: pop 0.5s forwards;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
 }
 
 .loading {
@@ -89,16 +105,10 @@ input, select {
   <button onclick="reset()">초기화</button>
 </div>
 
-<!-- 🎯 오늘의 추천 -->
 <div class="card" id="today"></div>
-
-<!-- 🎲 결과 -->
 <div class="card" id="result"></div>
-
-<!-- 📜 최근 기록 -->
 <div class="card" id="history"></div>
 
-<!-- 💡 하단 문구 -->
 <div style="margin:30px; opacity:0.6; font-size:14px;">
   💡 행운은 준비된 자에게 옵니다<br>
   🍀 오늘도 1등 가즈아~
@@ -113,36 +123,36 @@ function getColor(n){
   return "#b0d840";
 }
 
-// 🎯 오늘의 추천
+// 🎯 오늘 추천
 function todayPick(){
-  let nums = [];
-
+  let nums=[];
   while(nums.length<6){
     let n=Math.floor(Math.random()*45)+1;
     if(!nums.includes(n)) nums.push(n);
   }
-
   nums.sort((a,b)=>a-b);
 
-  let balls = nums.map(n=>`<span class="ball" style="background:${getColor(n)}">${n}</span>`).join("");
+  let balls = nums.map((n,i)=>
+    `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
+  ).join("");
 
-  document.getElementById("today").innerHTML = "<h3>🎯 오늘의 추천</h3>"+balls;
+  document.getElementById("today").innerHTML="<h3>🎯 오늘의 추천</h3>"+balls;
 }
 
-// 📜 기록 저장
-let history = [];
+// 📜 기록
+let history=[];
 
 function saveHistory(nums){
   history.unshift(nums);
-  if(history.length > 10) history.pop();
+  if(history.length>10) history.pop();
 
-  let html = "<h3>📜 최근 생성 기록</h3>";
+  let html="<h3>📜 최근 생성 기록</h3>";
 
   history.forEach((h,i)=>{
-    html += `${i+1}: ${h.join(", ")}<br>`;
+    html+=`${i+1}: ${h.join(", ")}<br>`;
   });
 
-  document.getElementById("history").innerHTML = html;
+  document.getElementById("history").innerHTML=html;
 }
 
 function generate(){
@@ -166,23 +176,24 @@ function generate(){
       nums=nums.slice(0,6);
       nums.sort((a,b)=>a-b);
 
-      let balls=nums.map(n=>`<span class="ball" style="background:${getColor(n)}">${n}</span>`).join("");
+      let balls = nums.map((n,i)=>
+        `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
+      ).join("");
 
       output+=`<div>${i+1}번: ${balls}</div>`;
 
-      saveHistory(nums); // 👉 기록 저장
+      saveHistory(nums);
     }
 
     document.getElementById("result").innerHTML=output;
 
-  }, 500);
+  },500);
 }
 
 function reset(){
   document.getElementById("result").innerHTML="";
 }
 
-// 실행 시 오늘의 추천 생성
 window.onload = todayPick;
 </script>
 
