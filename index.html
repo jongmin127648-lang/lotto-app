@@ -2,95 +2,106 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>로또 1등 해보자~</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ffcc00">
+<!-- ✅ 모바일 필수 -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>로또 1등 해보자~</title>
 
 <style>
 body {
   margin:0;
-  font-family: -apple-system, BlinkMacSystemFont;
-  background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
+  font-family:-apple-system, BlinkMacSystemFont;
+  background:linear-gradient(180deg,#1c1c1e,#2c2c2e);
   color:white;
   text-align:center;
+  font-size:16px;
 }
 
-h1 { margin-top:20px; }
-
+/* 카드 */
 .card {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
-  margin:15px;
-  padding:20px;
-  border-radius:25px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
+  margin:12px;
+  padding:18px;
+  border-radius:20px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
 }
 
+/* 버튼 */
 button {
-  padding:12px 20px;
+  padding:16px 18px;
   border:none;
-  border-radius:15px;
-  background: linear-gradient(145deg, #ffd700, #ffb300);
+  border-radius:14px;
+  background:linear-gradient(145deg,#ffd700,#ffb300);
   font-weight:bold;
+  font-size:16px;
   margin:5px;
   cursor:pointer;
 }
 
-button:active { transform: scale(0.95); }
-
-input, select {
-  padding:10px;
-  border-radius:12px;
-  border:none;
-  margin:5px;
-  background:#3a3a3c;
-  color:white;
+button:active {
+  transform:scale(0.95);
 }
 
+/* input / select */
+input, select {
+  padding:14px;
+  font-size:16px;
+  border-radius:12px;
+  border:none;
+  margin:5px 0;
+  background:#3a3a3c;
+  color:white;
+  width:100%;
+  box-sizing:border-box;
+}
+
+/* 고정 영역 */
+.fixed-row {
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* 로또 번호 */
 .ball {
   display:inline-block;
-  padding:12px;
+  width:38px;
+  height:38px;
+  line-height:38px;
   border-radius:50%;
   margin:4px;
-  font-size:14px;
-  transform: scale(0);
-  animation: pop 0.5s forwards;
+  font-size:15px;
+  text-align:center;
+  transform:scale(0);
+  animation:pop 0.5s forwards;
 }
 
 @keyframes pop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0% { transform:scale(0); }
+  60% { transform:scale(1.2); }
+  100% { transform:scale(1); }
 }
 
 .loading {
-  font-size:20px;
-  animation: blink 0.8s infinite;
+  font-size:18px;
+  animation:blink 0.8s infinite;
 }
 
 @keyframes blink {
   50% { opacity:0.3; }
-}
-
-/* 🔥 추가: 고정 입력 + 선택 한 줄 배치 */
-.fixed-row {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎲 로또 1등 해보자~</h1>
+<h2>🎲 로또 1등 해보자~</h2>
 
 <div class="card">
-  <span class="label">🎟 로또 수량</span>
-  
+
+  <label>🎟 로또 수량</label>
   <select id="count">
     <option value="1">1줄</option>
     <option value="5" selected>5줄</option>
@@ -99,10 +110,10 @@ input, select {
 
   <br><br>
 
-  <!-- 🔥 고정번호 + 고정줄 같은 줄 -->
+  <!-- 고정 영역 -->
   <div class="fixed-row">
     <input id="fixed" placeholder="고정 번호 (최대 6개, 예: 1,2,3)">
-    
+
     <select id="fixedCount">
       <option value="0">고정 안함</option>
       <option value="1" selected>1줄 고정</option>
@@ -119,13 +130,8 @@ input, select {
   <button onclick="reset()">초기화</button>
 </div>
 
-<div class="card" id="today"></div>
 <div class="card" id="result"></div>
 <div class="card" id="history"></div>
-
-<div style="margin:30px; opacity:0.6; font-size:14px;">
-  💡 1등 하고 놀자<br>
-</div>
 
 <script>
 function getColor(n){
@@ -136,39 +142,22 @@ function getColor(n){
   return "#b0d840";
 }
 
-function todayPick(){
-  const names = ["송하영", "박지원", "이채영", "이나경", "백지헌", "승봉 도민"];
-  const randomName = names[Math.floor(Math.random() * names.length)];
-
-  let nums=[];
-  while(nums.length<6){
-    let n=Math.floor(Math.random()*45)+1;
-    if(!nums.includes(n)) nums.push(n);
-  }
-  nums.sort((a,b)=>a-b);
-
-  let balls = nums.map((n,i)=>
-    `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
-  ).join("");
-
-  document.getElementById("today").innerHTML=
-    `<h3>🎯 ${randomName} 추천 번호</h3>` + balls;
-}
-
 let history=[];
+
 function saveHistory(nums){
   history.unshift(nums);
   if(history.length>10) history.pop();
 
-  let html="<h3>📜 최근 생성 기록</h3>";
+  let html="<h3>📜 최근 기록</h3>";
   history.forEach((h,i)=>{
-    html+=`${i+1}: ${h.join(", ")}<br>`;
+    html+=`${i+1}. ${h.join(", ")}<br>`;
   });
 
   document.getElementById("history").innerHTML=html;
 }
 
 function generate(){
+
   let count=parseInt(document.getElementById("count").value);
   let fixedInput=document.getElementById("fixed").value;
   let fixedCount=parseInt(document.getElementById("fixedCount").value);
@@ -177,38 +166,39 @@ function generate(){
     .map(n=>parseInt(n))
     .filter(n=>!isNaN(n) && n>=1 && n<=45);
 
-  fixed = [...new Set(fixed)];
+  fixed=[...new Set(fixed)];
 
-  // 🔥 변경: 최대 6개
-  if(fixed.length > 6){
-    alert("고정 번호는 최대 6개까지 가능합니다");
+  if(fixed.length>6){
+    alert("최대 6개까지 가능합니다");
     return;
   }
 
   document.getElementById("result").innerHTML="<div class='loading'>🎰 생성중...</div>";
 
   setTimeout(()=>{
+
     let output="";
 
     for(let i=0;i<count;i++){
       let nums=[];
 
-      if(i < fixedCount && fixed.length > 0){
-        nums = [...fixed];
+      if(i<fixedCount && fixed.length>0){
+        nums=[...fixed];
       }
 
-      while(nums.length < 6){
+      while(nums.length<6){
         let n=Math.floor(Math.random()*45)+1;
         if(!nums.includes(n)) nums.push(n);
       }
 
       nums.sort((a,b)=>a-b);
 
-      let balls = nums.map((n,i)=>
-        `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
+      let balls=nums.map(n=>
+        `<span class="ball" style="background:${getColor(n)}">${n}</span>`
       ).join("");
 
-      output+=`<div>${i+1}번: ${balls}</div>`;
+      output+=`<div style="margin:10px 0">${i+1}줄 ${balls}</div>`;
+
       saveHistory(nums);
     }
 
@@ -220,8 +210,6 @@ function generate(){
 function reset(){
   document.getElementById("result").innerHTML="";
 }
-
-window.onload = todayPick;S
 </script>
 
 </body>
