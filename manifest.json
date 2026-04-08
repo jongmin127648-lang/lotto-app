@@ -1,6 +1,6 @@
 {
-  "name": "로또 생성기 PRO",
-  "short_name": "Lotto",
+  "name": "로또 1등 해보자~",
+  "short_name": "로또1등",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#1f1f1f",
