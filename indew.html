@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>로또 생성기 PRO</title>
+
+<link rel="manifest" href="manifest.json">
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+  background: linear-gradient(135deg, #1f1f1f, #3a3a3a);
+  color: white;
+}
+
+h1 {
+  margin-top: 20px;
+}
+
+.container {
+  margin: 20px;
+}
+
+select, button, input {
+  padding: 10px;
+  margin: 5px;
+  border-radius: 10px;
+  border: none;
+}
+
+button {
+  background: #ffcc00;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.line {
+  margin: 10px;
+}
+
+.ball {
+  display: inline-block;
+  margin: 5px;
+  padding: 10px 14px;
+  border-radius: 50%;
+  font-weight: bold;
+  color: black;
+  animation: pop 0.3s ease;
+}
+
+@keyframes pop {
+  0% { transform: scale(0); }
+  100% { transform: scale(1); }
+}
+
+.history {
+  margin-top: 30px;
+  border-top: 1px solid #555;
+  padding-top: 10px;
+}
+
+.match {
+  color: #00ffcc;
+  font-weight: bold;
+}
+</style>
+
+</head>
+<body>
+
+<h1>🎲 로또 생성기 PRO</h1>
+
+<div class="container">
+  <select id="count">
+    <option value="1">1줄</option>
+    <option value="5" selected>5줄</option>
+    <option value="10">10줄</option>
+  </select>
+
+  <button onclick="generate()">번호 생성</button>
+  <button onclick="reset()">초기화</button>
+</div>
+
+<div>
+  <h3>🏆 당첨번호 입력</h3>
+  <input id="win" placeholder="예: 1,2,3,4,5,6">
+  <button onclick="checkWin()">비교</button>
+</div>
+
+<div id="result"></div>
+
+<div class="history">
+  <h3>📜 최근 기록</h3>
+  <div id="history"></div>
+</div>
+
+<script>
+function getColor(n) {
+  if (n <= 10) return "#fbc400";
+  if (n <= 20) return "#69c8f2";
+  if (n <= 30) return "#ff7272";
+  if (n <= 40) return "#aaa";
+  return "#b0d840";
+}
+
+let lastNumbers = [];
+
+function generate() {
+  let count = document.getElementById("count").value;
+  let resultDiv = document.getElementById("result");
+  resultDiv.innerHTML = "🎰 생성중...";
+
+  setTimeout(() => {
+    let output = "";
+    lastNumbers = [];
+
+    for (let i = 0; i < count; i++) {
+      let nums = [];
+
+      while (nums.length < 6) {
+        let n = Math.floor(Math.random() * 45) + 1;
+        if (!nums.includes(n)) nums.push(n);
+      }
+
+      nums.sort((a,b)=>a-b);
+      lastNumbers.push(nums);
+
+      let balls = nums.map(n =>
+        `<span class="ball" style="background:${getColor(n)}">${n}</span>`
+      ).join("");
+
+      output += `<div class="line">${i+1}번: ${balls}</div>`;
+    }
+
+    resultDiv.innerHTML = output;
+    saveHistory(output);
+  }, 500);
+}
+
+function reset() {
+  document.getElementById("result").innerHTML = "";
+}
+
+function saveHistory(data) {
+  let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
+  history.unshift(data);
+
+  if (history.length > 5) history.pop();
+
+  localStorage.setItem("lottoHistory", JSON.stringify(history));
+  loadHistory();
+}
+
+function loadHistory() {
+  let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
+  document.getElementById("history").innerHTML = history.join("<hr>");
+}
+
+function checkWin() {
+  let input = document.getElementById("win").value;
+  let winNums = input.split(",").map(n => parseInt(n.trim()));
+
+  let output = "";
+
+  lastNumbers.forEach((nums, i) => {
+    let matchCount = nums.filter(n => winNums.includes(n)).length;
+
+    output += `<div class="line">
+      ${i+1}번: ${nums.join(", ")} 
+      👉 <span class="match">${matchCount}개 맞음</span>
+    </div>`;
+  });
+
+  document.getElementById("result").innerHTML = output;
+}
+
+loadHistory();
+</script>
+
+</body>
+</html>
