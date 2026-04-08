@@ -63,16 +63,19 @@ input, select{
 /* 🔥 버튼 (앱 스타일) */
 .btn{
   width:100%;
-  padding:14px;
-  margin-top:10px;
+  padding:18px;
+  margin-top:16px;
+  margin-bottom:10px; /* 👈 끝에 붙는 문제 해결 */
   border:none;
-  border-radius:14px;
-  font-size:15px;
+  border-radius:16px;
+  font-size:16px;
   font-weight:bold;
   color:black;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
+  box-shadow:0 10px 20px rgba(0,0,0,0.3); /* 👈 앱 느낌 */
 }
 
+/* 버튼 눌림 */
 .btn:active{
   transform:scale(0.97);
 }
@@ -92,6 +95,12 @@ input, select{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
+
+}
+
+/* 🔥 카드 내부 여백 강화 (숨통 확보) */
+.card{
+  padding:18px;
 }
 
 /* 🔥 번호 공 */
