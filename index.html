@@ -25,12 +25,14 @@ body{
   font-weight:bold;
   text-align:center;
   border-bottom:1px solid rgba(255,255,255,0.08);
+  cursor:pointer;
 }
 
 /* 🔥 컨테이너 */
 .container{
   padding:15px;
   padding-bottom:40px;
+  transition:all 0.2s ease;
 }
 
 /* 🔥 카드 */
@@ -130,13 +132,13 @@ input, select{
   opacity:0.7;
 }
 
-/* 🔥 토스트 메시지 */
+/* 🔥 토스트 */
 .toast{
   position:fixed;
-  top:80px;              /* 🔥 상단으로 이동 */
+  top:80px;
   left:50%;
   transform:translateX(-50%);
-  background:rgba(255,0,0,0.92);
+  background:rgba(255,0,0,0.9);
   color:white;
   padding:12px 18px;
   border-radius:12px;
@@ -145,27 +147,27 @@ input, select{
   z-index:9999;
   max-width:90%;
   text-align:center;
-
-  animation:toastIn 0.2s ease;
 }
 
-/* 🔥 위에서 내려오는 느낌 */
-@keyframes toastIn{
-  from{
-    opacity:0;
-    transform:translateX(-50%) translateY(-10px);
-  }
-  to{
-    opacity:1;
-    transform:translateX(-50%) translateY(0);
-  }
+/* 🔥 초기화 애니메이션 */
+.fade-out{
+  opacity:0;
+  transform:scale(0.98);
+  transition:all 0.2s ease;
+}
+
+.fade-in{
+  opacity:1;
+  transform:scale(1);
+  transition:all 0.2s ease;
 }
 </style>
 </head>
 
 <body>
 
-<div class="appbar">🎲 로또 생성기</div>
+<!-- 🔥 상단 클릭 시 초기화 -->
+<div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
 
 <!-- 🔥 토스트 -->
 <div id="toast" class="toast"></div>
@@ -187,11 +189,11 @@ input, select{
     <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
     <select id="fixedCount">
       <option value="0" selected>고정 안함</option>
-      <option value="1">1줄 고정</option>
-      <option value="2">2줄 고정</option>
-      <option value="3">3줄 고정</option>
-      <option value="4">4줄 고정</option>
-      <option value="5">5줄 고정</option>
+      <option value="1">1줄</option>
+      <option value="2">2줄</option>
+      <option value="3">3줄</option>
+      <option value="4">4줄</option>
+      <option value="5">5줄</option>
     </select>
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
@@ -257,7 +259,6 @@ function validateFixed(){
   let input=document.getElementById("fixed");
   let value=input.value;
 
-  // 문자/특수문자 차단
   if(/[^0-9, ]/.test(value)){
     showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
     input.value=value.replace(/[^0-9, ]/g,'');
@@ -332,6 +333,28 @@ function generate(){
     document.getElementById("result").innerHTML=output;
 
   },500);
+}
+
+/* 🔥 부드러운 초기화 */
+function resetApp(){
+
+  showToast("🔄 초기화 완료");
+
+  const container=document.querySelector(".container");
+
+  container.classList.add("fade-out");
+
+  setTimeout(()=>{
+
+    document.getElementById("fixed").value="";
+    document.getElementById("count").value="5";
+    document.getElementById("fixedCount").value="0";
+    document.getElementById("result").innerHTML="";
+
+    container.classList.remove("fade-out");
+    container.classList.add("fade-in");
+
+  },200);
 }
 
 renderHistory();
