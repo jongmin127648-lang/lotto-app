@@ -2,45 +2,34 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>로또 앱 PRO</title>
+<title>로또 앱</title>
 
 <style>
 body {
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont;
-  background:#1c1c1e;
+  background: #1c1c1e;
   color:white;
 }
 
-/* 헤더 */
+/* 상단 */
 header {
   text-align:center;
-  padding:18px;
+  padding:20px 10px;
   font-size:22px;
   font-weight:bold;
 }
 
-/* 광고 배너 */
-.ad {
-  margin:10px 15px;
-  padding:12px;
-  border-radius:15px;
-  background:linear-gradient(90deg,#ffcc00,#ff9900);
-  color:black;
-  font-weight:bold;
-  text-align:center;
-}
-
 /* 카드 */
 .card {
-  background:rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.08);
   margin:15px;
   padding:15px;
-  border-radius:18px;
-  backdrop-filter: blur(10px);
+  border-radius:20px;
+  backdrop-filter: blur(15px);
 }
 
-/* row */
+/* 한 줄 설정 */
 .row {
   display:flex;
   align-items:center;
@@ -50,10 +39,11 @@ header {
 }
 
 .label {
-  font-size:13px;
+  font-size:14px;
   opacity:0.8;
 }
 
+/* input/select */
 input, select {
   flex:1;
   padding:10px;
@@ -63,16 +53,17 @@ input, select {
   color:white;
 }
 
-/* 버튼 */
+/* 버튼 하단 고정 */
 .bottom {
   position:fixed;
   bottom:0;
   left:0;
   width:100%;
+  background:#1c1c1e;
+  padding:10px;
   display:flex;
   gap:10px;
-  padding:10px;
-  background:#1c1c1e;
+  box-shadow:0 -5px 20px rgba(0,0,0,0.4);
 }
 
 .bottom button {
@@ -81,10 +72,17 @@ input, select {
   border:none;
   border-radius:12px;
   font-weight:bold;
+  cursor:pointer;
 }
 
-.primary { background:linear-gradient(145deg,#ffd700,#ffb300); }
-.secondary { background:#3a3a3c; color:white; }
+.primary {
+  background:linear-gradient(145deg,#ffd700,#ffb300);
+}
+
+.secondary {
+  background:#3a3a3c;
+  color:white;
+}
 
 /* 번호 */
 .ball {
@@ -93,52 +91,36 @@ input, select {
   border-radius:50%;
   margin:3px;
   font-size:13px;
-  transform:scale(0);
-  animation:pop 0.3s forwards;
+  animation:pop 0.4s forwards;
 }
 
 @keyframes pop {
   0%{transform:scale(0);}
-  70%{transform:scale(1.3);}
+  70%{transform:scale(1.2);}
   100%{transform:scale(1);}
 }
 
-/* 슬롯머신 */
-.slot {
-  font-size:18px;
+.loading {
   text-align:center;
-  letter-spacing:2px;
-  padding:10px;
-  opacity:0.7;
-  animation:spin 0.08s infinite;
+  animation:blink 0.8s infinite;
 }
 
-@keyframes spin {
-  0%{transform:translateY(0);}
-  50%{transform:translateY(-2px);}
-  100%{transform:translateY(2px);}
-}
-
-/* 확률 */
-.prob {
-  font-size:13px;
-  line-height:1.6;
-  opacity:0.9;
+@keyframes blink {
+  50%{opacity:0.3;}
 }
 </style>
 </head>
 
 <body>
 
-<header>🎲 로또 PRO</header>
+<header>🎲 로또 생성기</header>
 
-<!-- 🔥 광고 -->
-<div class="ad">🔥 오늘의 이벤트: 1등 당첨 시 커피 쿠폰 지급!</div>
-
+<!-- 설정 -->
 <div class="card">
 
+  <!-- 로또 수량 -->
   <div class="row">
-    <span class="label">🎟 수량</span>
+    <span class="label">🎟 로또 수량</span>
     <select id="count">
       <option value="1">1줄</option>
       <option value="5" selected>5줄</option>
@@ -146,46 +128,35 @@ input, select {
     </select>
   </div>
 
+  <!-- 고정 번호 -->
   <div class="row">
-    <span class="label">📌 고정번호</span>
+    <span class="label">📌 고정 번호</span>
     <input id="fixed" placeholder="예: 1,2,3 (최대 6개)">
   </div>
 
+  <!-- 고정 줄 -->
   <div class="row">
-    <span class="label">📍 고정줄</span>
+    <span class="label">📍 고정 줄</span>
     <select id="fixedCount">
       <option value="0">없음</option>
       <option value="1" selected>1줄</option>
       <option value="2">2줄</option>
       <option value="3">3줄</option>
+      <option value="4">4줄</option>
+      <option value="5">5줄</option>
     </select>
   </div>
 
 </div>
 
-<!-- 🔥 확률 시뮬레이터 -->
-<div class="card">
-  <h3>📊 당첨 확률 시뮬레이터</h3>
-  <div class="prob">
-    🎯 1등 확률: 1 / 8,145,060<br>
-    🎯 2등 확률: 1 / 1,357,510<br>
-    🎯 3등 확률: 1 / 35,724<br>
-    🎯 4등 확률: 1 / 733<br>
-    🎯 5등 확률: 1 / 45<br><br>
-    💡 기대값: -50% ~ -70% (현실)
-  </div>
-</div>
-
-<!-- 🔥 광고 -->
-<div class="ad">💰 프리미엄 가입하면 광고 제거!</div>
-
 <!-- 결과 -->
 <div class="card" id="result"></div>
 <div class="card" id="history"></div>
 
+<!-- 하단 버튼 -->
 <div class="bottom">
   <button class="secondary" onclick="reset()">초기화</button>
-  <button class="primary" onclick="generate()">자동 생성</button>
+  <button class="primary" onclick="generate()">번호 생성</button>
 </div>
 
 <script>
@@ -211,26 +182,7 @@ function saveHistory(nums){
   document.getElementById("history").innerHTML=html;
 }
 
-/* 🔥 슬롯머신 효과 */
-function slotAnimation(cb){
-  let el=document.getElementById("result");
-  el.innerHTML="<div class='slot'>🎰 생성중... 돌리는 중...</div>";
-
-  let count=0;
-  let timer=setInterval(()=>{
-    el.innerHTML="<div class='slot'>"+Math.random().toString().slice(2,8)+"</div>";
-    count++;
-
-    if(count>15){
-      clearInterval(timer);
-      cb();
-    }
-  },80);
-}
-
-/* 생성 */
 function generate(){
-
   let count=parseInt(document.getElementById("count").value);
   let fixedInput=document.getElementById("fixed").value;
   let fixedCount=parseInt(document.getElementById("fixedCount").value);
@@ -242,16 +194,16 @@ function generate(){
   fixed=[...new Set(fixed)];
 
   if(fixed.length>6){
-    alert("최대 6개");
+    alert("최대 6개까지만 가능");
     return;
   }
 
-  slotAnimation(()=>{
+  document.getElementById("result").innerHTML="<div class='loading'>🎰 생성중...</div>";
 
+  setTimeout(()=>{
     let output="";
 
     for(let i=0;i<count;i++){
-
       let nums=[];
 
       if(i<fixedCount && fixed.length>0){
@@ -265,7 +217,7 @@ function generate(){
 
       nums.sort((a,b)=>a-b);
 
-      let balls=nums.map(n=>
+      let balls=nums.map((n)=>
         `<span class="ball" style="background:${getColor(n)}">${n}</span>`
       ).join("");
 
@@ -275,7 +227,8 @@ function generate(){
     }
 
     document.getElementById("result").innerHTML=output;
-  });
+
+  },500);
 }
 
 function reset(){
