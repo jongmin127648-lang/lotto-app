@@ -83,9 +83,8 @@ input, select {
 </div>
 
 <div class="card">
-  <h3>🏆 당첨번호</h3>
-  <input id="win" placeholder="자동 입력 가능">
-  <button onclick="getLotto()">자동 불러오기</button>
+  <h3>🏆 당첨번호 입력</h3>
+  <input id="win" placeholder="예: 1,2,3,4,5,6">
   <button onclick="checkWin()">비교</button>
 </div>
 
@@ -149,26 +148,6 @@ function checkWin(){
   });
 
   document.getElementById("result").innerHTML=output;
-}
-
-async function getLotto(){
-  try{
-    let res=await fetch("https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=latest");
-    let data=await res.json();
-
-    let nums=[
-      data.drwtNo1,
-      data.drwtNo2,
-      data.drwtNo3,
-      data.drwtNo4,
-      data.drwtNo5,
-      data.drwtNo6
-    ];
-
-    document.getElementById("win").value=nums.join(",");
-  }catch(e){
-    alert("불러오기 실패");
-  }
 }
 </script>
 
