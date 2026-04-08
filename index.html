@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 
-<!-- 📱 모바일 필수 -->
+<!-- ✅ 모바일 필수 -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <title>로또 1등 해보자~</title>
@@ -12,28 +12,28 @@
 body {
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont;
-  background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
+  background:linear-gradient(180deg,#1c1c1e,#2c2c2e);
   color:white;
   text-align:center;
   font-size:16px;
 }
 
-h1 { margin-top:20px; }
-
+/* 카드 */
 .card {
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(20px);
   margin:12px;
   padding:18px;
   border-radius:20px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow:0 10px 30px rgba(0,0,0,0.5);
 }
 
+/* 버튼 */
 button {
   padding:16px 18px;
   border:none;
   border-radius:14px;
-  background: linear-gradient(145deg, #ffd700, #ffb300);
+  background:linear-gradient(145deg,#ffd700,#ffb300);
   font-weight:bold;
   font-size:16px;
   margin:5px;
@@ -44,6 +44,7 @@ button:active {
   transform:scale(0.95);
 }
 
+/* input / select */
 input, select {
   padding:14px;
   font-size:16px;
@@ -56,14 +57,14 @@ input, select {
   box-sizing:border-box;
 }
 
-/* 고정 입력 */
+/* 고정 영역 */
 .fixed-row {
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
-/* 번호 */
+/* 로또 번호 */
 .ball {
   display:inline-block;
   width:38px;
@@ -72,6 +73,8 @@ input, select {
   border-radius:50%;
   margin:4px;
   font-size:15px;
+  text-align:center;
+  transform:scale(0);
   animation:pop 0.5s forwards;
 }
 
@@ -89,40 +92,16 @@ input, select {
 @keyframes blink {
   50% { opacity:0.3; }
 }
-
-/* 🔥 하단 네비 */
-.navbar {
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  display:flex;
-  background:#1c1c1e;
-  border-top:1px solid rgba(255,255,255,0.1);
-}
-
-.navbar button {
-  flex:1;
-  padding:12px 0;
-  background:none;
-  border:none;
-  color:white;
-  font-size:13px;
-}
-
-.navbar button:active {
-  background:rgba(255,255,255,0.1);
-}
 </style>
 </head>
 
 <body>
 
-<h1>🎲 로또 1등 해보자~</h1>
+<h2>🎲 로또 1등 해보자~</h2>
 
 <div class="card">
-  <label>🎟 로또 수량</label>
 
+  <label>🎟 로또 수량</label>
   <select id="count">
     <option value="1">1줄</option>
     <option value="5" selected>5줄</option>
@@ -131,12 +110,13 @@ input, select {
 
   <br><br>
 
+  <!-- 고정 영역 -->
   <div class="fixed-row">
     <input id="fixed" placeholder="고정 번호 (최대 6개, 예: 1,2,3)">
 
     <select id="fixedCount">
-      <option value="0">고정 안함</option>
-      <option value="1" selected>1줄 고정</option>
+      <option value="0" selected >고정 안함</option>
+      <option value="1">1줄 고정</option>
       <option value="2">2줄 고정</option>
       <option value="3">3줄 고정</option>
       <option value="4">4줄 고정</option>
@@ -153,17 +133,6 @@ input, select {
 <div class="card" id="result"></div>
 <div class="card" id="history"></div>
 
-<div style="margin-bottom:80px; opacity:0.6; font-size:14px;">
-  💡 1등 가즈아
-</div>
-
-<!-- 🔥 하단 네비 -->
-<div class="navbar">
-  <button onclick="scrollTopView()">🏠 홈</button>
-  <button onclick="generate()">🎰 생성</button>
-  <button onclick="scrollHistory()">📜 기록</button>
-</div>
-
 <script>
 function getColor(n){
   if(n<=10) return "#fbc400";
@@ -174,13 +143,6 @@ function getColor(n){
 }
 
 let history=[];
-
-/* 🔥 진동 효과 */
-function vibrate(){
-  if(navigator.vibrate){
-    navigator.vibrate([80,50,80]);
-  }
-}
 
 function saveHistory(nums){
   history.unshift(nums);
@@ -196,20 +158,18 @@ function saveHistory(nums){
 
 function generate(){
 
-  vibrate(); // 🔥 진동 실행
-
   let count=parseInt(document.getElementById("count").value);
   let fixedInput=document.getElementById("fixed").value;
   let fixedCount=parseInt(document.getElementById("fixedCount").value);
 
   let fixed=fixedInput.split(",")
     .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+    .filter(n=>!isNaN(n) && n>=1 && n<=45);
 
   fixed=[...new Set(fixed)];
 
   if(fixed.length>6){
-    alert("최대 6개");
+    alert("최대 6개까지 가능합니다");
     return;
   }
 
@@ -220,7 +180,6 @@ function generate(){
     let output="";
 
     for(let i=0;i<count;i++){
-
       let nums=[];
 
       if(i<fixedCount && fixed.length>0){
@@ -250,15 +209,6 @@ function generate(){
 
 function reset(){
   document.getElementById("result").innerHTML="";
-}
-
-/* 🔥 네비 기능 */
-function scrollTopView(){
-  window.scrollTo({top:0, behavior:"smooth"});
-}
-
-function scrollHistory(){
-  document.getElementById("history").scrollIntoView({behavior:"smooth"});
 }
 </script>
 
