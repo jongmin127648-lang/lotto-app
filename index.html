@@ -12,7 +12,6 @@ body{
   font-family:-apple-system, BlinkMacSystemFont, "Segoe UI";
   background:#0f0f10;
   color:white;
-  padding-bottom:70px; /* 🔥 하단 네비 공간 */
 }
 
 /* 🔥 상단 */
@@ -50,7 +49,7 @@ body{
   margin-bottom:6px;
 }
 
-/* 🔥 입력 (overflow 해결) */
+/* 🔥 입력 */
 input, select{
   width:100%;
   box-sizing:border-box;
@@ -130,31 +129,6 @@ input, select{
   padding:20px;
   opacity:0.7;
 }
-
-/* 🔥 하단 네비 */
-.navbar{
-  position:fixed;
-  bottom:0;
-  left:0;
-  width:100%;
-  display:flex;
-  background:rgba(28,28,30,0.95);
-  backdrop-filter: blur(20px);
-  border-top:1px solid rgba(255,255,255,0.1);
-}
-
-.navbar button{
-  flex:1;
-  padding:12px 0;
-  background:none;
-  border:none;
-  color:white;
-  font-size:13px;
-}
-
-.navbar button:active{
-  background:rgba(255,255,255,0.1);
-}
 </style>
 </head>
 
@@ -176,14 +150,14 @@ input, select{
     <div class="label" style="margin-top:12px;">고정 번호</div>
     <input id="fixed" placeholder="예: 1,2,3,4">
 
-    <div class="label" style="margin-top:12px;">고정 적용 줄</div>
+    <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
     <select id="fixedCount">
-      <option value="0">안함</option>
-      <option value="1" selected>1줄</option>
-      <option value="2">2줄</option>
-      <option value="3">3줄</option>
-      <option value="4">4줄</option>
-      <option value="5">5줄</option>
+      <option value="0" selected>고정 안함</option>
+      <option value="1">1줄 고정</option>
+      <option value="2">2줄 고정</option>
+      <option value="3">3줄 고정</option>
+      <option value="4">4줄 고정</option>
+      <option value="5">5줄 고정</option>
     </select>
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
@@ -203,20 +177,13 @@ input, select{
 
 </div>
 
-<!-- 🔥 하단 네비 -->
-<div class="navbar">
-  <button onclick="scrollTop()">🏠 홈</button>
-  <button onclick="scrollResult()">🎰 결과</button>
-  <button onclick="scrollHistory()">📜 기록</button>
-</div>
-
 <script>
 
 let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
 
 function saveHistory(nums){
   history.unshift(nums);
-  if(history.length>10) history.pop();
+  if(history.length > 10) history.pop();
   localStorage.setItem("lottoHistory", JSON.stringify(history));
   renderHistory();
 }
@@ -242,45 +209,45 @@ function getColor(n){
 
 function generate(){
 
-  vibrate(); // 🔥 진동
+  vibrate();
 
-  let count=parseInt(document.getElementById("count").value);
-  let fixedInput=document.getElementById("fixed").value;
-  let fixedCount=parseInt(document.getElementById("fixedCount").value);
+  let count = parseInt(document.getElementById("count").value);
+  let fixedInput = document.getElementById("fixed").value;
+  let fixedCount = parseInt(document.getElementById("fixedCount").value);
 
-  let fixed=fixedInput.split(",")
-    .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+  let fixed = fixedInput.split(",")
+    .map(n => parseInt(n))
+    .filter(n => !isNaN(n) && n >= 1 && n <= 45);
 
-  fixed=[...new Set(fixed)];
+  fixed = [...new Set(fixed)];
 
   document.getElementById("result").innerHTML =
     `<div class="loading">🎰 생성 중...</div>`;
 
-  setTimeout(()=>{
+  setTimeout(() => {
 
-    let output="";
+    let output = "";
 
-    for(let i=0;i<count;i++){
+    for(let i=0; i<count; i++){
 
-      let nums=[];
+      let nums = [];
 
-      if(i<fixedCount && fixed.length>0){
-        nums=[...fixed];
+      if(i < fixedCount && fixed.length > 0){
+        nums = [...fixed];
       }
 
-      while(nums.length<6){
-        let n=Math.floor(Math.random()*45)+1;
+      while(nums.length < 6){
+        let n = Math.floor(Math.random() * 45) + 1;
         if(!nums.includes(n)) nums.push(n);
       }
 
-      nums.sort((a,b)=>a-b);
+      nums.sort((a,b) => a-b);
 
-      let balls=nums.map(n=>
+      let balls = nums.map(n =>
         `<div class="ball" style="background:${getColor(n)}">${n}</div>`
       ).join("");
 
-      output+=`
+      output += `
         <div class="line">
           <div style="width:30px;opacity:0.6">${i+1}</div>
           ${balls}
@@ -290,20 +257,9 @@ function generate(){
       saveHistory(nums);
     }
 
-    document.getElementById("result").innerHTML=output;
+    document.getElementById("result").innerHTML = output;
 
-  },500);
-}
-
-/* 🔥 네비 */
-function scrollTop(){
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-function scrollResult(){
-  document.getElementById("result").scrollIntoView({behavior:"smooth"});
-}
-function scrollHistory(){
-  document.getElementById("history").scrollIntoView({behavior:"smooth"});
+  }, 500);
 }
 
 renderHistory();
