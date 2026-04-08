@@ -2,129 +2,161 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>로또 1등 해보자~</title>
-
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ffcc00">
+<title>로또 앱</title>
 
 <style>
 body {
   margin:0;
-  font-family: -apple-system, BlinkMacSystemFont;
-  background: linear-gradient(180deg, #1c1c1e, #2c2c2e);
+  font-family:-apple-system, BlinkMacSystemFont;
+  background: #1c1c1e;
   color:white;
-  text-align:center;
 }
 
-h1 { margin-top:20px; }
+/* 상단 */
+header {
+  text-align:center;
+  padding:20px 10px;
+  font-size:22px;
+  font-weight:bold;
+}
 
+/* 카드 */
 .card {
   background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(20px);
   margin:15px;
-  padding:20px;
-  border-radius:25px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  padding:15px;
+  border-radius:20px;
+  backdrop-filter: blur(15px);
 }
 
-button {
-  padding:12px 20px;
-  border:none;
-  border-radius:15px;
-  background: linear-gradient(145deg, #ffd700, #ffb300);
-  font-weight:bold;
-  margin:5px;
-  cursor:pointer;
+/* 한 줄 설정 */
+.row {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  margin:10px 0;
+  gap:10px;
 }
 
-button:active { transform: scale(0.95); }
+.label {
+  font-size:14px;
+  opacity:0.8;
+}
 
+/* input/select */
 input, select {
+  flex:1;
   padding:10px;
   border-radius:12px;
   border:none;
-  margin:5px;
+  background:#2c2c2e;
+  color:white;
+}
+
+/* 버튼 하단 고정 */
+.bottom {
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  background:#1c1c1e;
+  padding:10px;
+  display:flex;
+  gap:10px;
+  box-shadow:0 -5px 20px rgba(0,0,0,0.4);
+}
+
+.bottom button {
+  flex:1;
+  padding:15px;
+  border:none;
+  border-radius:12px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.primary {
+  background:linear-gradient(145deg,#ffd700,#ffb300);
+}
+
+.secondary {
   background:#3a3a3c;
   color:white;
 }
 
+/* 번호 */
 .ball {
   display:inline-block;
-  padding:12px;
+  padding:10px;
   border-radius:50%;
-  margin:4px;
-  font-size:14px;
-  transform: scale(0);
-  animation: pop 0.5s forwards;
+  margin:3px;
+  font-size:13px;
+  animation:pop 0.4s forwards;
 }
 
 @keyframes pop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.2); }
-  100% { transform: scale(1); }
+  0%{transform:scale(0);}
+  70%{transform:scale(1.2);}
+  100%{transform:scale(1);}
 }
 
 .loading {
-  font-size:20px;
-  animation: blink 0.8s infinite;
+  text-align:center;
+  animation:blink 0.8s infinite;
 }
 
 @keyframes blink {
-  50% { opacity:0.3; }
-}
-
-/* 🔥 추가: 고정 입력 + 선택 한 줄 배치 */
-.fixed-row {
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  gap:10px;
-  flex-wrap:wrap;
+  50%{opacity:0.3;}
 }
 </style>
 </head>
 
 <body>
 
-<h1>🎲 로또 1등 해보자~</h1>
+<header>🎲 로또 생성기</header>
 
+<!-- 설정 -->
 <div class="card">
-  <span class="label">🎟 로또 수량</span>
-  
-  <select id="count">
-    <option value="1">1줄</option>
-    <option value="5" selected>5줄</option>
-    <option value="10">10줄</option>
-  </select>
 
-  <br><br>
-
-  <!-- 🔥 고정번호 + 고정줄 같은 줄 -->
-  <div class="fixed-row">
-    <input id="fixed" placeholder="고정 번호 (최대 6개, 예: 1,2,3)">
-    
-    <select id="fixedCount">
-      <option value="0">고정 안함</option>
-      <option value="1" selected>1줄 고정</option>
-      <option value="2">2줄 고정</option>
-      <option value="3">3줄 고정</option>
-      <option value="4">4줄 고정</option>
-      <option value="5">5줄 고정</option>
+  <!-- 로또 수량 -->
+  <div class="row">
+    <span class="label">🎟 로또 수량</span>
+    <select id="count">
+      <option value="1">1줄</option>
+      <option value="5" selected>5줄</option>
+      <option value="10">10줄</option>
     </select>
   </div>
 
-  <br>
+  <!-- 고정 번호 -->
+  <div class="row">
+    <span class="label">📌 고정 번호</span>
+    <input id="fixed" placeholder="예: 1,2,3 (최대 6개)">
+  </div>
 
-  <button onclick="generate()">번호 생성</button>
-  <button onclick="reset()">초기화</button>
+  <!-- 고정 줄 -->
+  <div class="row">
+    <span class="label">📍 고정 줄</span>
+    <select id="fixedCount">
+      <option value="0">없음</option>
+      <option value="1" selected>1줄</option>
+      <option value="2">2줄</option>
+      <option value="3">3줄</option>
+      <option value="4">4줄</option>
+      <option value="5">5줄</option>
+    </select>
+  </div>
+
 </div>
 
-<div class="card" id="today"></div>
+<!-- 결과 -->
 <div class="card" id="result"></div>
 <div class="card" id="history"></div>
 
-<div style="margin:30px; opacity:0.6; font-size:14px;">
-  💡 1등 하고 놀자<br>
+<!-- 하단 버튼 -->
+<div class="bottom">
+  <button class="secondary" onclick="reset()">초기화</button>
+  <button class="primary" onclick="generate()">번호 생성</button>
 </div>
 
 <script>
@@ -136,33 +168,15 @@ function getColor(n){
   return "#b0d840";
 }
 
-function todayPick(){
-  const names = ["송하영", "박지원", "이채영", "이나경", "백지헌", "승봉 도민"];
-  const randomName = names[Math.floor(Math.random() * names.length)];
-
-  let nums=[];
-  while(nums.length<6){
-    let n=Math.floor(Math.random()*45)+1;
-    if(!nums.includes(n)) nums.push(n);
-  }
-  nums.sort((a,b)=>a-b);
-
-  let balls = nums.map((n,i)=>
-    `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
-  ).join("");
-
-  document.getElementById("today").innerHTML=
-    `<h3>🎯 ${randomName} 추천 번호</h3>` + balls;
-}
-
 let history=[];
+
 function saveHistory(nums){
   history.unshift(nums);
   if(history.length>10) history.pop();
 
-  let html="<h3>📜 최근 생성 기록</h3>";
+  let html="<h3>📜 기록</h3>";
   history.forEach((h,i)=>{
-    html+=`${i+1}: ${h.join(", ")}<br>`;
+    html+=`${i+1}. ${h.join(", ")}<br>`;
   });
 
   document.getElementById("history").innerHTML=html;
@@ -175,13 +189,12 @@ function generate(){
 
   let fixed=fixedInput.split(",")
     .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n) && n>=1 && n<=45);
+    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
 
-  fixed = [...new Set(fixed)];
+  fixed=[...new Set(fixed)];
 
-  // 🔥 변경: 최대 6개
-  if(fixed.length > 6){
-    alert("고정 번호는 최대 6개까지 가능합니다");
+  if(fixed.length>6){
+    alert("최대 6개까지만 가능");
     return;
   }
 
@@ -193,22 +206,23 @@ function generate(){
     for(let i=0;i<count;i++){
       let nums=[];
 
-      if(i < fixedCount && fixed.length > 0){
-        nums = [...fixed];
+      if(i<fixedCount && fixed.length>0){
+        nums=[...fixed];
       }
 
-      while(nums.length < 6){
+      while(nums.length<6){
         let n=Math.floor(Math.random()*45)+1;
         if(!nums.includes(n)) nums.push(n);
       }
 
       nums.sort((a,b)=>a-b);
 
-      let balls = nums.map((n,i)=>
-        `<span class="ball" style="background:${getColor(n)}; animation-delay:${i*0.1}s">${n}</span>`
+      let balls=nums.map((n)=>
+        `<span class="ball" style="background:${getColor(n)}">${n}</span>`
       ).join("");
 
-      output+=`<div>${i+1}번: ${balls}</div>`;
+      output+=`<div style="margin:10px 0">${i+1}줄 ${balls}</div>`;
+
       saveHistory(nums);
     }
 
@@ -220,8 +234,6 @@ function generate(){
 function reset(){
   document.getElementById("result").innerHTML="";
 }
-
-window.onload = todayPick;S
 </script>
 
 </body>
