@@ -14,6 +14,7 @@ body{
   color:white;
 }
 
+/* 🔥 상단 */
 .appbar{
   position:sticky;
   top:0;
@@ -27,12 +28,14 @@ body{
   cursor:pointer;
 }
 
+/* 🔥 컨테이너 */
 .container{
   padding:15px;
   padding-bottom:40px;
   transition:all 0.2s ease;
 }
 
+/* 🔥 카드 */
 .card{
   background:rgba(255,255,255,0.06);
   border-radius:18px;
@@ -41,12 +44,14 @@ body{
   box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
+/* 🔥 라벨 */
 .label{
   font-size:13px;
   opacity:0.7;
   margin-bottom:6px;
 }
 
+/* 🔥 입력 */
 input, select{
   width:100%;
   box-sizing:border-box;
@@ -59,6 +64,7 @@ input, select{
   margin-top:6px;
 }
 
+/* 🔥 버튼 */
 .btn{
   width:100%;
   padding:14px;
@@ -72,14 +78,18 @@ input, select{
   box-shadow:0 10px 20px rgba(0,0,0,0.3);
 }
 
-.btn:active{ transform:scale(0.97); }
+.btn:active{
+  transform:scale(0.97);
+}
 
+/* 🔥 결과 */
 .result{
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
+/* 🔥 줄 */
 .line{
   background:rgba(255,255,255,0.05);
   padding:12px;
@@ -89,6 +99,7 @@ input, select{
   align-items:center;
 }
 
+/* 🔥 공 */
 .ball{
   width:34px;
   height:34px;
@@ -107,12 +118,14 @@ input, select{
   100%{transform:scale(1);}
 }
 
+/* 🔥 기록 */
 .history{
   font-size:13px;
   opacity:0.8;
   line-height:1.6;
 }
 
+/* 🔥 로딩 */
 .loading{
   text-align:center;
   padding:20px;
@@ -122,7 +135,7 @@ input, select{
 /* 🔥 토스트 */
 .toast{
   position:fixed;
-  top:70px;
+  top:80px;
   left:50%;
   transform:translateX(-50%);
   background:rgba(255,0,0,0.9);
@@ -136,6 +149,20 @@ input, select{
   text-align:center;
 }
 
+/* 🔥 초기화 애니메이션 */
+.fade-out{
+  opacity:0;
+  transform:scale(0.98);
+  transition:all 0.2s ease;
+}
+
+.fade-in{
+  opacity:1;
+  transform:scale(1);
+  transition:all 0.2s ease;
+}
+
+/* 🔥 🔥 새 추가: 리프레시 효과 */
 .refresh{
   animation:refreshAnim 0.35s ease;
 }
@@ -150,12 +177,15 @@ input, select{
 
 <body>
 
+<!-- 🔥 상단 클릭 시 초기화 -->
 <div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
 
+<!-- 🔥 토스트 (유지하지만 안씀) -->
 <div id="toast" class="toast"></div>
 
 <div class="container">
 
+  <!-- 🔥 설정 -->
   <div class="card">
     <div class="label">로또 수량</div>
     <select id="count">
@@ -165,10 +195,7 @@ input, select{
     </select>
 
     <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed"
-      placeholder="예: 1,2,3,4"
-      oninput="validateFixed()"
-      onblur="cleanFixedNumbers()">
+    <input id="fixed" placeholder="예: 1,2,3,4" oninput="validateFixed()">
 
     <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
     <select id="fixedCount">
@@ -183,11 +210,13 @@ input, select{
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
 
+  <!-- 🔥 결과 -->
   <div class="card">
     <div class="label">결과</div>
     <div id="result" class="result"></div>
   </div>
 
+  <!-- 🔥 기록 -->
   <div class="card">
     <div class="label">최근 기록</div>
     <div id="history" class="history"></div>
@@ -199,16 +228,22 @@ input, select{
 
 let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
 
-function showToast(msg){
-  const toast=document.getElementById("toast");
-  toast.innerText=msg;
-  toast.style.display="block";
+function saveHistory(nums){
+  history.unshift(nums);
+  if(history.length > 10) history.pop();
+  localStorage.setItem("lottoHistory", JSON.stringify(history));
+  renderHistory();
+}
 
-  setTimeout(()=>toast.style.display="none",2000);
+function renderHistory(){
+  document.getElementById("history").innerHTML =
+    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
 function vibrate(){
-  if(navigator.vibrate) navigator.vibrate(80);
+  if(navigator.vibrate){
+    navigator.vibrate(80);
+  }
 }
 
 function getColor(n){
@@ -219,53 +254,55 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 🔥 입력 중 검증 (UX 방해 없음) */
+/* 🔥 토스트 (유지 but 미사용) */
+function showToast(msg){
+  const toast=document.getElementById("toast");
+  toast.innerText=msg;
+  toast.style.display="block";
+
+  setTimeout(()=>{
+    toast.style.display="none";
+  },2000);
+}
+
+/* 🔥 검증 */
 function validateFixed(){
-  let input = document.getElementById("fixed");
-  let value = input.value;
+  let input=document.getElementById("fixed");
+  let value=input.value;
 
-  // 🔥 1) 숫자, 쉼표, 공백만 허용 (기타 즉시 제거)
-  let cleaned = value.replace(/[^0-9, ]/g, '');
+  if(/[^0-9, ]/.test(value)){
+    input.value=value.replace(/[^0-9, ]/g,'');
+    return;
+  }
 
-  if(cleaned !== value){
-    showToast("숫자와 쉼표만 입력 가능합니다"); 
+  let nums=value.split(",")
+    .map(n=>n.trim())
+    .filter(n=>n!=="");
+
+  for(let n of nums){
+    let num=parseInt(n);
+    if(isNaN(num) || num<1 || num>45){
+      return;
+    }
+  }
 }
-
-  // 🔥 2) 쉼표 기준 숫자 정리
-  let nums = cleaned
-    .split(",")
-    .map(n => parseInt(n.trim()))
-    .filter(n => !isNaN(n));
-
-  // 🔥 3) 1~45 범위 자동 필터
-  let filtered = nums.filter(n => n >= 1 && n <= 45);
-
-  // 🔥 4) 중복 제거
-  filtered = [...new Set(filtered)];
-
-  // 🔥 5) 입력값 자동 반영
-  input.value = filtered.join(",");
-}
-
 
 /* 🔥 생성 */
 function generate(){
 
   vibrate();
 
-  cleanFixedNumbers(); // ⭐ 핵심 추가
-
   let count=parseInt(document.getElementById("count").value);
+  let fixedInput=document.getElementById("fixed").value;
   let fixedCount=parseInt(document.getElementById("fixedCount").value);
 
-  let fixed = document.getElementById("fixed").value
-    .split(",")
+  let fixed=fixedInput.split(",")
     .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n) && n>=1 && n<=45);
+    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
 
-  fixed = [...new Set(fixed)];
+  fixed=[...new Set(fixed)];
 
-  document.getElementById("result").innerHTML =
+  document.getElementById("result").innerHTML=
     `<div class="loading">🎰 생성 중...</div>`;
 
   setTimeout(()=>{
@@ -276,7 +313,7 @@ function generate(){
 
       let nums=[];
 
-      if(i<fixedCount){
+      if(i<fixedCount && fixed.length>0){
         nums=[...fixed];
       }
 
@@ -298,35 +335,34 @@ function generate(){
         </div>
       `;
 
-      history.unshift(nums);
+      saveHistory(nums);
     }
 
-    if(history.length>10) history=history.slice(0,10);
-    localStorage.setItem("lottoHistory", JSON.stringify(history));
-
-    renderHistory();
-    document.getElementById("result").innerHTML = output;
+    document.getElementById("result").innerHTML=output;
 
   },500);
 }
 
-/* 🔥 초기화 */
+/* 🔥 ⭐ 핵심 수정: 앱바 클릭 리프레시 */
 function resetApp(){
+
   vibrate();
-  document.querySelector(".container").classList.add("refresh");
+
+  const container=document.querySelector(".container");
+
+  // 🔥 앱 느낌 리프레시 애니메이션
+  container.classList.add("refresh");
 
   setTimeout(()=>{
+
     document.getElementById("fixed").value="";
     document.getElementById("count").value="5";
     document.getElementById("fixedCount").value="0";
     document.getElementById("result").innerHTML="";
-    document.querySelector(".container").classList.remove("refresh");
-  },350);
-}
 
-function renderHistory(){
-  document.getElementById("history").innerHTML =
-    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
+    container.classList.remove("refresh");
+
+  },350);
 }
 
 renderHistory();
