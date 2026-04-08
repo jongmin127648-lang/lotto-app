@@ -221,26 +221,32 @@ function getColor(n){
 
 /* 🔥 입력 중 검증 (UX 방해 없음) */
 function validateFixed(){
-  let value=document.getElementById("fixed").value;
+  let input = document.getElementById("fixed");
+  let value = input.value;
 
-  if(/[^0-9, ]/.test(value)){
-    showToast("숫자와 쉼표만 입력 가능합니다");
-  }
+  // 🔥 1) 숫자, 쉼표, 공백만 허용 (기타 즉시 제거)
+  let cleaned = value.replace(/[^0-9, ]/g, '');
+
+  if(cleaned !== value){
+    showToast("숫자와 쉼표만 입력 가능합니다"); 
 }
 
-/* 🔥 실제 정리 함수 */
-function cleanFixedNumbers(){
-  let input=document.getElementById("fixed");
-
-  let nums = input.value
+  // 🔥 2) 쉼표 기준 숫자 정리
+  let nums = cleaned
     .split(",")
-    .map(n=>parseInt(n.trim()))
-    .filter(n=>!isNaN(n) && n>=1 && n<=45);
+    .map(n => parseInt(n.trim()))
+    .filter(n => !isNaN(n));
 
-  nums = [...new Set(nums)];
+  // 🔥 3) 1~45 범위 자동 필터
+  let filtered = nums.filter(n => n >= 1 && n <= 45);
 
-  input.value = nums.join(",");
+  // 🔥 4) 중복 제거
+  filtered = [...new Set(filtered)];
+
+  // 🔥 5) 입력값 자동 반영
+  input.value = filtered.join(",");
 }
+
 
 /* 🔥 생성 */
 function generate(){
