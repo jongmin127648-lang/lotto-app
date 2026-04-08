@@ -96,9 +96,9 @@ input, select{
 
 /* 🔥 번호 공 */
 .ball{
-  width:36px;
-  height:36px;
-  line-height:36px;
+  width:30px;
+  height:30px;
+  line-height:30px;
   border-radius:50%;
   text-align:center;
   margin:4px;
@@ -150,16 +150,16 @@ input, select{
     </select>
 
     <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed" placeholder="예: 1,2,3,4">
+    <input id="fixed" placeholder="예:1,2,3">
 
     <div class="label" style="margin-top:12px;">고정 적용 줄</div>
     <select id="fixedCount">
-      <option value="0">안함</option>
-      <option value="1" selected>1줄</option>
-      <option value="2">2줄</option>
-      <option value="3">3줄</option>
-      <option value="4">4줄</option>
-      <option value="5">5줄</option>
+      <option value="0" selected >고정 안함</option>
+      <option value="1">1줄 고정</option>
+      <option value="2">2줄 고정</option>
+      <option value="3">3줄 고정</option>
+      <option value="4">4줄 고정</option>
+      <option value="5">5줄 고정</option>
     </select>
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
