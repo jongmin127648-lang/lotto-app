@@ -64,24 +64,13 @@ input, select {
   100% { transform: scale(1); }
 }
 
-.number-grid {
-  display:grid;
-  grid-template-columns: repeat(9, 1fr);
-  gap:5px;
-  margin-top:10px;
+.loading {
+  font-size:20px;
+  animation: blink 0.8s infinite;
 }
 
-.num-btn {
-  padding:8px;
-  border-radius:10px;
-  background:#3a3a3c;
-  cursor:pointer;
-}
-
-.num-btn.active {
-  background:#ffcc00;
-  color:black;
-  font-weight:bold;
+@keyframes blink {
+  50% { opacity:0.3; }
 }
 </style>
 </head>
@@ -99,23 +88,34 @@ input, select {
 
   <br>
 
-  <input id="fixed" placeholder="고정 번호 (예: 1,2,3)">
-  
+  <input id="fixed" placeholder="고정 번호 (최대 5개, 예: 1,2,3)">
+
+  <br>
+
+  <!-- 🔥 고정 줄 개수 선택 -->
+  <select id="fixedCount">
+    <option value="0">고정 안함</option>
+    <option value="1" selected>1줄 고정</option>
+    <option value="2">2줄 고정</option>
+    <option value="3">3줄 고정</option>
+    <option value="4">4줄 고정</option>
+    <option value="5">5줄 고정</option>
+  </select>
+
   <br>
 
   <button onclick="generate()">번호 생성</button>
   <button onclick="reset()">초기화</button>
 </div>
 
-<!-- 🎯 번호 선택 UI -->
-<div class="card">
-  <h3>🎯 번호 선택 (최대 5개)</h3>
-  <div class="number-grid" id="grid"></div>
-</div>
-
 <div class="card" id="today"></div>
 <div class="card" id="result"></div>
 <div class="card" id="history"></div>
+
+<div style="margin:30px; opacity:0.6; font-size:14px;">
+  💡 행운은 준비된 자에게 옵니다<br>
+  🍀 오늘도 1등 가즈아~
+</div>
 
 <script>
 function getColor(n){
@@ -124,31 +124,6 @@ function getColor(n){
   if(n<=30) return "#ff7272";
   if(n<=40) return "#aaa";
   return "#b0d840";
-}
-
-// 🎯 번호 선택
-let selected = [];
-
-function createGrid(){
-  let html="";
-  for(let i=1;i<=45;i++){
-    html+=`<div class="num-btn" onclick="toggleNum(${i}, this)">${i}</div>`;
-  }
-  document.getElementById("grid").innerHTML=html;
-}
-
-function toggleNum(n, el){
-  if(selected.includes(n)){
-    selected = selected.filter(x=>x!==n);
-    el.classList.remove("active");
-  }else{
-    if(selected.length >=5){
-      alert("최대 5개까지 선택");
-      return;
-    }
-    selected.push(n);
-    el.classList.add("active");
-  }
 }
 
 // 🎯 오늘 추천
@@ -183,29 +158,35 @@ function saveHistory(nums){
 
 // 🎲 생성
 function generate(){
-  let count=document.getElementById("count").value;
+  let count=parseInt(document.getElementById("count").value);
   let fixedInput=document.getElementById("fixed").value;
+  let fixedCount=parseInt(document.getElementById("fixedCount").value);
 
   let fixed=fixedInput.split(",")
     .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n));
+    .filter(n=>!isNaN(n) && n>=1 && n<=45);
 
-  let finalFixed = [...new Set([...fixed, ...selected])];
+  fixed = [...new Set(fixed)];
 
-  if(finalFixed.length >5){
-    alert("고정 번호는 최대 5개");
+  if(fixed.length >5){
+    alert("고정 번호는 최대 5개까지 가능합니다");
     return;
   }
 
-  document.getElementById("result").innerHTML="🎰 생성중...";
+  document.getElementById("result").innerHTML="<div class='loading'>🎰 생성중...</div>";
 
   setTimeout(()=>{
     let output="";
 
     for(let i=0;i<count;i++){
-      let nums=[...finalFixed];
+      let nums=[];
 
-      while(nums.length<6){
+      // 🔥 고정 줄 개수만큼 적용
+      if(i < fixedCount && fixed.length > 0){
+        nums = [...fixed];
+      }
+
+      while(nums.length < 6){
         let n=Math.floor(Math.random()*45)+1;
         if(!nums.includes(n)) nums.push(n);
       }
@@ -227,15 +208,10 @@ function generate(){
 }
 
 function reset(){
-  selected=[];
-  document.querySelectorAll(".num-btn").forEach(el=>el.classList.remove("active"));
   document.getElementById("result").innerHTML="";
 }
 
-window.onload = ()=>{
-  todayPick();
-  createGrid();
-};
+window.onload = todayPick;
 </script>
 
 </body>
