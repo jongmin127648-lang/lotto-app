@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>로또 생성기 PRO</title>
+<title>로또 생성기 FINAL</title>
 
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#ffcc00">
@@ -48,12 +48,15 @@ input, select {
   margin:5px;
   font-weight:bold;
   color:black;
-  animation: pop 0.3s;
 }
 
-@keyframes pop {
-  from {transform:scale(0);}
-  to {transform:scale(1);}
+.loading {
+  font-size:20px;
+  animation: blink 0.8s infinite;
+}
+
+@keyframes blink {
+  50% { opacity:0.3; }
 }
 
 </style>
@@ -61,7 +64,7 @@ input, select {
 
 <body>
 
-<h1>🎲 로또 생성기 PRO</h1>
+<h1>🎲 로또 생성기 FINAL</h1>
 
 <div class="card">
   <select id="count">
@@ -70,6 +73,10 @@ input, select {
     <option value="10">10줄</option>
   </select>
 
+  <br>
+
+  <input id="fixed" placeholder="고정 번호 입력 (예: 1,2,3)">
+  
   <br>
   <button onclick="generate()">번호 생성</button>
   <button onclick="reset()">초기화</button>
@@ -97,26 +104,35 @@ let lastNumbers=[];
 
 function generate(){
   let count=document.getElementById("count").value;
-  let output="";
-  lastNumbers=[];
+  let fixedInput=document.getElementById("fixed").value;
+  let fixed=fixedInput.split(",").map(n=>parseInt(n)).filter(n=>!isNaN(n));
 
-  for(let i=0;i<count;i++){
-    let nums=[];
+  document.getElementById("result").innerHTML="<div class='loading'>🎰 생성중...</div>";
 
-    while(nums.length<6){
-      let n=Math.floor(Math.random()*45)+1;
-      if(!nums.includes(n)) nums.push(n);
+  setTimeout(()=>{
+    let output="";
+    lastNumbers=[];
+
+    for(let i=0;i<count;i++){
+      let nums=[...fixed];
+
+      while(nums.length<6){
+        let n=Math.floor(Math.random()*45)+1;
+        if(!nums.includes(n)) nums.push(n);
+      }
+
+      nums=nums.slice(0,6);
+      nums.sort((a,b)=>a-b);
+      lastNumbers.push(nums);
+
+      let balls=nums.map(n=>`<span class="ball" style="background:${getColor(n)}">${n}</span>`).join("");
+
+      output+=`<div>${i+1}번: ${balls}</div>`;
     }
 
-    nums.sort((a,b)=>a-b);
-    lastNumbers.push(nums);
+    document.getElementById("result").innerHTML=output;
 
-    let balls=nums.map(n=>`<span class="ball" style="background:${getColor(n)}">${n}</span>`).join("");
-
-    output+=`<div>${i+1}번: ${balls}</div>`;
-  }
-
-  document.getElementById("result").innerHTML=output;
+  }, 500);
 }
 
 function reset(){
