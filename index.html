@@ -10,58 +10,42 @@
 body{
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont, "Segoe UI";
-  background:#0f0f10;
+  background:#0b0b0d;
   color:white;
 }
 
-/* 🔥 상단 */
+/* 🔥 상단 앱바 */
 .appbar{
   position:sticky;
   top:0;
-  background:rgba(28,28,30,0.9);
+  background:rgba(20,20,22,0.95);
   backdrop-filter: blur(20px);
-  padding:16px;
+  padding:18px;
   font-size:18px;
-  font-weight:bold;
+  font-weight:700;
   text-align:center;
   border-bottom:1px solid rgba(255,255,255,0.08);
-  cursor:pointer;
 }
 
-/* 🔥 컨테이너 */
+/* 🔥 전체 컨테이너 */
 .container{
-  padding:15px;
-  padding-bottom:40px;
-  transition:all 0.2s ease;
+  padding:16px;
 }
 
 /* 🔥 카드 */
 .card{
   background:rgba(255,255,255,0.06);
-  border-radius:18px;
+  border-radius:22px;
   padding:18px;
-  margin-bottom:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  margin-bottom:14px;
+  box-shadow:0 12px 30px rgba(0,0,0,0.45);
 }
 
 /* 🔥 라벨 */
 .label{
   font-size:13px;
   opacity:0.7;
-  margin-bottom:6px;
-}
-
-/* 🔥 입력 */
-input, select{
-  width:100%;
-  box-sizing:border-box;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  background:#2c2c2e;
-  color:white;
-  font-size:15px;
-  margin-top:6px;
+  margin-bottom:10px;
 }
 
 /* 🔥 버튼 */
@@ -70,16 +54,10 @@ input, select{
   padding:14px;
   margin-top:14px;
   border:none;
-  border-radius:14px;
-  font-size:14px;
-  font-weight:bold;
-  color:black;
+  border-radius:16px;
+  font-weight:700;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
-  box-shadow:0 10px 20px rgba(0,0,0,0.3);
-}
-
-.btn:active{
-  transform:scale(0.97);
+  color:black;
 }
 
 /* 🔥 결과 */
@@ -91,45 +69,53 @@ input, select{
 
 /* 🔥 줄 */
 .line{
-  background:rgba(255,255,255,0.05);
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
   padding:12px;
   border-radius:14px;
-  display:flex;
-  flex-wrap:wrap;
-  align-items:center;
+  background:rgba(255,255,255,0.05);
 }
 
 /* 🔥 공 */
 .ball{
   width:34px;
   height:34px;
-  line-height:34px;
   border-radius:50%;
-  text-align:center;
+  display:flex;
+  justify-content:center;
+  align-items:center;
   margin:4px;
-  font-size:14px;
   font-weight:bold;
-  animation:pop 0.3s ease;
 }
 
-@keyframes pop{
-  0%{transform:scale(0);}
-  70%{transform:scale(1.2);}
-  100%{transform:scale(1);}
+/* 🔥 번호 선택 grid */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(7,1fr);
+  gap:8px;
+  margin-top:10px;
 }
 
-/* 🔥 기록 */
-.history{
+/* 🔥 번호 칩 */
+.num{
+  width:100%;
+  aspect-ratio:1/1;
+  border-radius:50%;
+  background:rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:center;
+  align-items:center;
   font-size:13px;
-  opacity:0.8;
-  line-height:1.6;
+  transition:0.2s;
+  user-select:none;
 }
 
-/* 🔥 로딩 */
-.loading{
-  text-align:center;
-  padding:20px;
-  opacity:0.7;
+.num.active{
+  background:#ffd60a;
+  color:black;
+  transform:scale(1.1);
+  font-weight:800;
 }
 
 /* 🔥 토스트 */
@@ -138,64 +124,31 @@ input, select{
   top:80px;
   left:50%;
   transform:translateX(-50%);
-  background:rgba(255,0,0,0.9);
-  color:white;
+  background:rgba(255,59,48,0.92);
   padding:12px 18px;
   border-radius:12px;
-  font-size:14px;
   display:none;
   z-index:9999;
-  max-width:90%;
-  text-align:center;
-}
-
-/* 🔥 초기화 애니메이션 */
-.fade-out{
-  opacity:0;
-  transform:scale(0.98);
-  transition:all 0.2s ease;
-}
-
-.fade-in{
-  opacity:1;
-  transform:scale(1);
-  transition:all 0.2s ease;
 }
 </style>
 </head>
 
 <body>
 
-<!-- 🔥 상단 클릭 시 초기화 -->
-<div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
-
-<!-- 🔥 토스트 -->
+<div class="appbar">🎲 로또 생성기</div>
 <div id="toast" class="toast"></div>
 
 <div class="container">
 
-  <!-- 🔥 설정 -->
+  <!-- 🔥 고정 번호 선택 -->
   <div class="card">
-    <div class="label">로또 수량</div>
-    <select id="count">
-      <option value="1">1줄</option>
-      <option value="5" selected>5줄</option>
-      <option value="10">10줄</option>
-    </select>
+    <div class="label">고정 번호 (최대 6개 선택)</div>
+    <div id="grid" class="grid"></div>
+    <button class="btn" onclick="clearFixed()">초기화</button>
+  </div>
 
-    <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed" placeholder="예: 1,2,3,4" oninput="validateFixed()">
-
-    <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
-    <select id="fixedCount">
-      <option value="0" selected>고정 안함</option>
-      <option value="1">1줄</option>
-      <option value="2">2줄</option>
-      <option value="3">3줄</option>
-      <option value="4">4줄</option>
-      <option value="5">5줄</option>
-    </select>
-
+  <!-- 🔥 생성 -->
+  <div class="card">
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
 
@@ -205,78 +158,71 @@ input, select{
     <div id="result" class="result"></div>
   </div>
 
-  <!-- 🔥 기록 -->
-  <div class="card">
-    <div class="label">최근 기록</div>
-    <div id="history" class="history"></div>
-  </div>
-
 </div>
 
 <script>
 
-let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
+let fixed = [];
 
-function saveHistory(nums){
-  history.unshift(nums);
-  if(history.length > 10) history.pop();
-  localStorage.setItem("lottoHistory", JSON.stringify(history));
-  renderHistory();
-}
-
-function renderHistory(){
-  document.getElementById("history").innerHTML =
-    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
-}
-
+/* 🔥 진동 */
 function vibrate(){
-  if(navigator.vibrate){
-    navigator.vibrate(80);
-  }
-}
-
-function getColor(n){
-  if(n<=10) return "#fbc400";
-  if(n<=20) return "#69c8f2";
-  if(n<=30) return "#ff7272";
-  if(n<=40) return "#aaaaaa";
-  return "#b0d840";
+  if(navigator.vibrate) navigator.vibrate(60);
 }
 
 /* 🔥 토스트 */
-function showToast(msg){
-  const toast=document.getElementById("toast");
-  toast.innerText=msg;
-  toast.style.display="block";
-
-  setTimeout(()=>{
-    toast.style.display="none";
-  },2000);
+function toast(msg){
+  const t=document.getElementById("toast");
+  t.innerText=msg;
+  t.style.display="block";
+  setTimeout(()=>t.style.display="none",1800);
 }
 
-/* 🔥 고정번호 검증 */
-function validateFixed(){
-  let input=document.getElementById("fixed");
-  let value=input.value;
+/* 🔥 1~45 버튼 생성 */
+function createGrid(){
+  const grid=document.getElementById("grid");
 
-  if(/[^0-9, ]/.test(value)){
-    showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
-    input.value=value.replace(/[^0-9, ]/g,'');
-    return;
+  for(let i=1;i<=45;i++){
+    const btn=document.createElement("div");
+    btn.className="num";
+    btn.innerText=i;
+
+    btn.onclick=()=>{
+
+      if(btn.classList.contains("active")){
+        btn.classList.remove("active");
+        fixed = fixed.filter(n=>n!==i);
+      }else{
+
+        if(fixed.length>=6){
+          toast("최대 6개까지만 선택 가능합니다");
+          return;
+        }
+
+        btn.classList.add("active");
+        fixed.push(i);
+      }
+
+      vibrate();
+    };
+
+    grid.appendChild(btn);
   }
+}
 
-  let nums=value.split(",")
-    .map(n=>n.trim())
-    .filter(n=>n!=="");
+/* 🔥 초기화 */
+function clearFixed(){
+  fixed=[];
+  document.querySelectorAll(".num").forEach(n=>n.classList.remove("active"));
+  toast("초기화 완료");
+}
 
-  for(let n of nums){
-    let num=parseInt(n);
-
-    if(isNaN(num) || num<1 || num>45){
-      showToast("로또 숫자 범위가 아닙니다. 다시 입력하세요");
-      return;
-    }
-  }
+/* 🔥 색상 */
+function color(n){
+  if(n<=10) return "#fbc400";
+  if(n<=20) return "#69c8f2";
+  if(n<=30) return "#ff7272";
+  if(n<=40) return "#aaa";
+  return "#b0d840";
 }
 
 /* 🔥 생성 */
@@ -284,80 +230,26 @@ function generate(){
 
   vibrate();
 
-  let count=parseInt(document.getElementById("count").value);
-  let fixedInput=document.getElementById("fixed").value;
-  let fixedCount=parseInt(document.getElementById("fixedCount").value);
+  let nums=[...fixed];
 
-  let fixed=fixedInput.split(",")
-    .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+  while(nums.length<6){
+    let n=Math.floor(Math.random()*45)+1;
+    if(!nums.includes(n)) nums.push(n);
+  }
 
-  fixed=[...new Set(fixed)];
+  nums.sort((a,b)=>a-b);
+
+  let html=nums.map(n=>
+    `<div class="ball" style="background:${color(n)}">${n}</div>`
+  ).join("");
 
   document.getElementById("result").innerHTML=
-    `<div class="loading">🎰 생성 중...</div>`;
+    `<div class="line">${html}</div>`;
 
-  setTimeout(()=>{
-
-    let output="";
-
-    for(let i=0;i<count;i++){
-
-      let nums=[];
-
-      if(i<fixedCount && fixed.length>0){
-        nums=[...fixed];
-      }
-
-      while(nums.length<6){
-        let n=Math.floor(Math.random()*45)+1;
-        if(!nums.includes(n)) nums.push(n);
-      }
-
-      nums.sort((a,b)=>a-b);
-
-      let balls=nums.map(n=>
-        `<div class="ball" style="background:${getColor(n)}">${n}</div>`
-      ).join("");
-
-      output+=`
-        <div class="line">
-          <div style="width:30px;opacity:0.6">${i+1}</div>
-          ${balls}
-        </div>
-      `;
-
-      saveHistory(nums);
-    }
-
-    document.getElementById("result").innerHTML=output;
-
-  },500);
+  toast("번호 생성 완료 🎉");
 }
 
-/* 🔥 부드러운 초기화 */
-function resetApp(){
-
-  showToast("🔄 초기화 완료");
-
-  const container=document.querySelector(".container");
-
-  container.classList.add("fade-out");
-
-  setTimeout(()=>{
-
-    document.getElementById("fixed").value="";
-    document.getElementById("count").value="5";
-    document.getElementById("fixedCount").value="0";
-    document.getElementById("result").innerHTML="";
-
-    container.classList.remove("fade-out");
-    container.classList.add("fade-in");
-
-  },200);
-}
-
-renderHistory();
+createGrid();
 
 </script>
 
