@@ -12,9 +12,10 @@ body{
   font-family:-apple-system, BlinkMacSystemFont, "Segoe UI";
   background:#0f0f10;
   color:white;
+  padding-bottom:70px; /* 🔥 하단 네비 공간 */
 }
 
-/* 🔥 상단 앱바 */
+/* 🔥 상단 */
 .appbar{
   position:sticky;
   top:0;
@@ -27,16 +28,17 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.08);
 }
 
-/* 🔥 전체 레이아웃 */
+/* 🔥 컨테이너 */
 .container{
   padding:15px;
+  padding-bottom:40px;
 }
 
-/* 🔥 카드 UI (앱 느낌 핵심) */
+/* 🔥 카드 */
 .card{
   background:rgba(255,255,255,0.06);
   border-radius:18px;
-  padding:16px;
+  padding:18px;
   margin-bottom:12px;
   box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
@@ -48,9 +50,10 @@ body{
   margin-bottom:6px;
 }
 
-/* 🔥 입력 */
+/* 🔥 입력 (overflow 해결) */
 input, select{
   width:100%;
+  box-sizing:border-box;
   padding:14px;
   border-radius:12px;
   border:none;
@@ -60,34 +63,32 @@ input, select{
   margin-top:6px;
 }
 
-/* 🔥 버튼 (앱 스타일) */
+/* 🔥 버튼 */
 .btn{
   width:100%;
   padding:18px;
   margin-top:16px;
-  margin-bottom:10px; /* 👈 끝에 붙는 문제 해결 */
   border:none;
   border-radius:16px;
   font-size:16px;
   font-weight:bold;
   color:black;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
-  box-shadow:0 10px 20px rgba(0,0,0,0.3); /* 👈 앱 느낌 */
+  box-shadow:0 10px 20px rgba(0,0,0,0.3);
 }
 
-/* 버튼 눌림 */
 .btn:active{
   transform:scale(0.97);
 }
 
-/* 🔥 결과 영역 */
+/* 🔥 결과 */
 .result{
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
-/* 🔥 한 줄 카드 */
+/* 🔥 줄 */
 .line{
   background:rgba(255,255,255,0.05);
   padding:12px;
@@ -95,19 +96,13 @@ input, select{
   display:flex;
   flex-wrap:wrap;
   align-items:center;
-
 }
 
-/* 🔥 카드 내부 여백 강화 (숨통 확보) */
-.card{
-  padding:18px;
-}
-
-/* 🔥 번호 공 */
+/* 🔥 공 */
 .ball{
-  width:30px;
-  height:30px;
-  line-height:30px;
+  width:34px;
+  height:34px;
+  line-height:34px;
   border-radius:50%;
   text-align:center;
   margin:4px;
@@ -134,11 +129,31 @@ input, select{
   text-align:center;
   padding:20px;
   opacity:0.7;
-  animation:blink 0.8s infinite;
 }
 
-@keyframes blink{
-  50%{opacity:0.2;}
+/* 🔥 하단 네비 */
+.navbar{
+  position:fixed;
+  bottom:0;
+  left:0;
+  width:100%;
+  display:flex;
+  background:rgba(28,28,30,0.95);
+  backdrop-filter: blur(20px);
+  border-top:1px solid rgba(255,255,255,0.1);
+}
+
+.navbar button{
+  flex:1;
+  padding:12px 0;
+  background:none;
+  border:none;
+  color:white;
+  font-size:13px;
+}
+
+.navbar button:active{
+  background:rgba(255,255,255,0.1);
 }
 </style>
 </head>
@@ -149,7 +164,7 @@ input, select{
 
 <div class="container">
 
-  <!-- 🔥 설정 카드 -->
+  <!-- 🔥 설정 -->
   <div class="card">
     <div class="label">로또 수량</div>
     <select id="count">
@@ -159,16 +174,16 @@ input, select{
     </select>
 
     <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed" placeholder="예:1,2,3">
+    <input id="fixed" placeholder="예: 1,2,3,4">
 
     <div class="label" style="margin-top:12px;">고정 적용 줄</div>
     <select id="fixedCount">
-      <option value="0" selected >고정 안함</option>
-      <option value="1">1줄 고정</option>
-      <option value="2">2줄 고정</option>
-      <option value="3">3줄 고정</option>
-      <option value="4">4줄 고정</option>
-      <option value="5">5줄 고정</option>
+      <option value="0">안함</option>
+      <option value="1" selected>1줄</option>
+      <option value="2">2줄</option>
+      <option value="3">3줄</option>
+      <option value="4">4줄</option>
+      <option value="5">5줄</option>
     </select>
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
@@ -188,9 +203,34 @@ input, select{
 
 </div>
 
+<!-- 🔥 하단 네비 -->
+<div class="navbar">
+  <button onclick="scrollTop()">🏠 홈</button>
+  <button onclick="scrollResult()">🎰 결과</button>
+  <button onclick="scrollHistory()">📜 기록</button>
+</div>
+
 <script>
 
-let history=[];
+let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
+
+function saveHistory(nums){
+  history.unshift(nums);
+  if(history.length>10) history.pop();
+  localStorage.setItem("lottoHistory", JSON.stringify(history));
+  renderHistory();
+}
+
+function renderHistory(){
+  document.getElementById("history").innerHTML =
+    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
+}
+
+function vibrate(){
+  if(navigator.vibrate){
+    navigator.vibrate(80);
+  }
+}
 
 function getColor(n){
   if(n<=10) return "#fbc400";
@@ -200,19 +240,12 @@ function getColor(n){
   return "#b0d840";
 }
 
-function saveHistory(nums){
-  history.unshift(nums);
-  if(history.length>10) history.pop();
-
-  document.getElementById("history").innerHTML =
-    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
-}
-
 function generate(){
+
+  vibrate(); // 🔥 진동
 
   let count=parseInt(document.getElementById("count").value);
   let fixedInput=document.getElementById("fixed").value;
-
   let fixedCount=parseInt(document.getElementById("fixedCount").value);
 
   let fixed=fixedInput.split(",")
@@ -249,7 +282,7 @@ function generate(){
 
       output+=`
         <div class="line">
-          <div style="width:40px;opacity:0.6">${i+1}</div>
+          <div style="width:30px;opacity:0.6">${i+1}</div>
           ${balls}
         </div>
       `;
@@ -259,8 +292,21 @@ function generate(){
 
     document.getElementById("result").innerHTML=output;
 
-  },600);
+  },500);
 }
+
+/* 🔥 네비 */
+function scrollTop(){
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function scrollResult(){
+  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+function scrollHistory(){
+  document.getElementById("history").scrollIntoView({behavior:"smooth"});
+}
+
+renderHistory();
 
 </script>
 
