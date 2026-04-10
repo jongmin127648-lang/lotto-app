@@ -1,4 +1,4 @@
-const CACHE_NAME = "lotto-v2";
+const CACHE_NAME = "lotto-v3";
 
 const FILES_TO_CACHE = [
   "./",
@@ -8,7 +8,6 @@ const FILES_TO_CACHE = [
   "./icon-512.png"
 ];
 
-/* ✅ 설치 */
 self.addEventListener("install", (e) => {
   self.skipWaiting();
 
@@ -19,7 +18,6 @@ self.addEventListener("install", (e) => {
   );
 });
 
-/* ✅ 활성화 (이전 캐시 삭제) */
 self.addEventListener("activate", (e) => {
   e.waitUntil(
     caches.keys().then((keys) => {
@@ -34,21 +32,23 @@ self.addEventListener("activate", (e) => {
   );
 });
 
-/* ✅ 요청 처리 (오프라인 지원 강화) */
+/* 🔥 안정형 캐시 전략 (추천) */
 self.addEventListener("fetch", (e) => {
   e.respondWith(
-    fetch(e.request)
-      .then((res) => {
-        // 정상 응답이면 캐시에 저장
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(e.request, clone);
-        });
-        return res;
-      })
-      .catch(() => {
-        // 오프라인이면 캐시에서 반환
-        return caches.match(e.request);
-      })
+    caches.match(e.request).then((cached) => {
+      return (
+        cached ||
+        fetch(e.request).then((res) => {
+          if (!res || res.status !== 200) return res;
+
+          const clone = res.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, clone);
+          });
+
+          return res;
+        }).catch(() => cached)
+      );
+    })
   );
 });

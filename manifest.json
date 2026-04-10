@@ -1,10 +1,11 @@
 {
   "name": "로또 생성기",
   "short_name": "로또",
-  "start_url": ".",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0f0f10",
   "theme_color": "#0f0f10",
+  "scope": "./",
   "icons": [
     {
       "src": "icon-192.png",

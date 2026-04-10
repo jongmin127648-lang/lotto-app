@@ -6,6 +6,8 @@
 
 <title>로또 앱</title>
 
+<link rel="manifest" href="./manifest.json">
+
 <style>
 body{
   margin:0;
@@ -48,6 +50,24 @@ body{
   color:white;
   font-weight:bold;
   display:none;
+}
+
+/* 🔥 설치 안내 */
+#installGuide{
+  display:none;
+  position:fixed;
+  bottom:20px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,0.85);
+  color:white;
+  padding:14px 16px;
+  border-radius:14px;
+  font-size:13px;
+  text-align:center;
+  max-width:80%;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  z-index:999;
 }
 
 .container{
@@ -156,6 +176,12 @@ input, select{
   <button class="installBtn" id="installBtn">앱 설치</button>
 </div>
 
+<!-- 🔥 설치 안내 -->
+<div id="installGuide">
+  📲 이 환경에서는 설치가 지원되지 않습니다<br>
+  <b>Chrome 브라우저</b>로 열어주세요
+</div>
+
 <div class="container">
 
   <div class="card">
@@ -196,33 +222,34 @@ input, select{
 
 <script>
 
-let history = [];
-
 /* =======================
-   🔥 PWA 설치 기능 추가
+   🔥 PWA 설치 기능
 ======================= */
 let deferredPrompt;
 const installBtn = document.getElementById("installBtn");
+const installGuide = document.getElementById("installGuide");
 
-// 모바일 Chrome 체크
-function isMobileChrome(){
-  const ua = navigator.userAgent;
-  return /Android/i.test(ua) && /Chrome/i.test(ua);
+function isAndroidChrome(){
+  return /Android/i.test(navigator.userAgent) && /Chrome/i.test(navigator.userAgent);
 }
 
-// 설치 가능 이벤트
+/* 설치 가능 */
 window.addEventListener("beforeinstallprompt", (e) => {
-  if(!isMobileChrome()) return;
-
   e.preventDefault();
   deferredPrompt = e;
 
-  installBtn.style.display = "block";
+  if(isAndroidChrome()){
+    installBtn.style.display = "block";
+  }
 });
 
-// 설치 버튼 클릭
+/* 버튼 클릭 */
 installBtn.addEventListener("click", async () => {
-  if(!deferredPrompt) return;
+  if(!deferredPrompt){
+    installGuide.style.display = "block";
+    setTimeout(()=>installGuide.style.display="none", 3000);
+    return;
+  }
 
   deferredPrompt.prompt();
   const choice = await deferredPrompt.userChoice;
@@ -234,12 +261,24 @@ installBtn.addEventListener("click", async () => {
   deferredPrompt = null;
 });
 
-// 설치 완료 감지
+/* 설치 완료 */
 window.addEventListener("appinstalled", () => {
   installBtn.style.display = "none";
 });
 
-/* ======================= */
+/* =======================
+   Service Worker 등록
+======================= */
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js");
+  });
+}
+
+/* =======================
+   기존 로또 코드
+======================= */
+let history = [];
 
 function saveHistory(nums){
   history.unshift(nums);
