@@ -4,9 +4,11 @@
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
+  "display_override": ["standalone", "window-controls-overlay"],
   "background_color": "#1f1f1f",
   "theme_color": "#ffcc00",
   "orientation": "portrait",
+  "description": "로또 번호를 생성해주는 앱",
   "icons": [
     {
       "src": "icon-192.png",
