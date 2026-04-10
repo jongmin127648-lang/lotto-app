@@ -13,8 +13,6 @@ body{
   background:#0f0f10;
   color:white;
 }
-
-/* 🔥 상단 */
 .appbar{
   position:sticky;
   top:0;
@@ -27,15 +25,11 @@ body{
   border-bottom:1px solid rgba(255,255,255,0.08);
   cursor:pointer;
 }
-
-/* 🔥 컨테이너 */
 .container{
   padding:15px;
   padding-bottom:40px;
   transition:all 0.2s ease;
 }
-
-/* 🔥 카드 */
 .card{
   background:rgba(255,255,255,0.06);
   border-radius:18px;
@@ -43,15 +37,11 @@ body{
   margin-bottom:12px;
   box-shadow:0 10px 30px rgba(0,0,0,0.4);
 }
-
-/* 🔥 라벨 */
 .label{
   font-size:13px;
   opacity:0.7;
   margin-bottom:6px;
 }
-
-/* 🔥 입력 */
 input, select{
   width:100%;
   box-sizing:border-box;
@@ -63,8 +53,6 @@ input, select{
   font-size:15px;
   margin-top:6px;
 }
-
-/* 🔥 버튼 */
 .btn{
   width:100%;
   padding:14px;
@@ -77,19 +65,14 @@ input, select{
   background:linear-gradient(145deg,#ffd60a,#ffb300);
   box-shadow:0 10px 20px rgba(0,0,0,0.3);
 }
-
 .btn:active{
   transform:scale(0.97);
 }
-
-/* 🔥 결과 */
 .result{
   display:flex;
   flex-direction:column;
   gap:10px;
 }
-
-/* 🔥 줄 */
 .line{
   background:rgba(255,255,255,0.05);
   padding:12px;
@@ -98,8 +81,6 @@ input, select{
   flex-wrap:wrap;
   align-items:center;
 }
-
-/* 🔥 공 */
 .ball{
   width:34px;
   height:34px;
@@ -111,28 +92,21 @@ input, select{
   font-weight:bold;
   animation:pop 0.3s ease;
 }
-
 @keyframes pop{
   0%{transform:scale(0);}
   70%{transform:scale(1.2);}
   100%{transform:scale(1);}
 }
-
-/* 🔥 기록 */
 .history{
   font-size:13px;
   opacity:0.8;
   line-height:1.6;
 }
-
-/* 🔥 로딩 */
 .loading{
   text-align:center;
   padding:20px;
   opacity:0.7;
 }
-
-/* 🔥 토스트 */
 .toast{
   position:fixed;
   top:80px;
@@ -148,25 +122,9 @@ input, select{
   max-width:90%;
   text-align:center;
 }
-
-/* 🔥 초기화 애니메이션 */
-.fade-out{
-  opacity:0;
-  transform:scale(0.98);
-  transition:all 0.2s ease;
-}
-
-.fade-in{
-  opacity:1;
-  transform:scale(1);
-  transition:all 0.2s ease;
-}
-
-/* 🔥 🔥 새 추가: 리프레시 효과 */
 .refresh{
   animation:refreshAnim 0.35s ease;
 }
-
 @keyframes refreshAnim{
   0%{transform:scale(1); filter:blur(0);}
   40%{transform:scale(0.98); filter:blur(2px);}
@@ -177,15 +135,11 @@ input, select{
 
 <body>
 
-<!-- 🔥 상단 클릭 시 초기화 -->
 <div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
-
-<!-- 🔥 토스트 (유지하지만 안씀) -->
 <div id="toast" class="toast"></div>
 
 <div class="container">
 
-  <!-- 🔥 설정 -->
   <div class="card">
     <div class="label">로또 수량</div>
     <select id="count">
@@ -210,13 +164,11 @@ input, select{
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
 
-  <!-- 🔥 결과 -->
   <div class="card">
     <div class="label">결과</div>
     <div id="result" class="result"></div>
   </div>
 
-  <!-- 🔥 기록 -->
   <div class="card">
     <div class="label">최근 기록</div>
     <div id="history" class="history"></div>
@@ -226,26 +178,68 @@ input, select{
 
 <script>
 
-let history = JSON.parse(localStorage.getItem("lottoHistory")) || [];
+/* 🔥 카톡 대응: 안전 저장소 */
+let memoryHistory = [];
 
-function saveHistory(nums){
-  history.unshift(nums);
-  if(history.length > 10) history.pop();
-  localStorage.setItem("lottoHistory", JSON.stringify(history));
-  renderHistory();
-}
-
-function renderHistory(){
-  document.getElementById("history").innerHTML =
-    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
-}
-
-function vibrate(){
-  if(navigator.vibrate){
-    navigator.vibrate(80);
+function getStorage(){
+  try{
+    const testKey="test";
+    localStorage.setItem(testKey,"1");
+    localStorage.removeItem(testKey);
+    return localStorage;
+  }catch(e){
+    return null;
   }
 }
 
+const storage = getStorage();
+
+let history = [];
+
+try{
+  if(storage){
+    history = JSON.parse(storage.getItem("lottoHistory")) || [];
+  }else{
+    history = memoryHistory;
+  }
+}catch(e){
+  history = [];
+}
+
+/* 🔥 저장 */
+function saveHistory(nums){
+  history.unshift(nums);
+  if(history.length > 10) history.pop();
+
+  try{
+    if(storage){
+      storage.setItem("lottoHistory", JSON.stringify(history));
+    }else{
+      memoryHistory = history;
+    }
+  }catch(e){}
+
+  renderHistory();
+}
+
+/* 🔥 렌더 */
+function renderHistory(){
+  try{
+    document.getElementById("history").innerHTML =
+      history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
+  }catch(e){}
+}
+
+/* 🔥 진동 */
+function vibrate(){
+  try{
+    if(navigator.vibrate){
+      navigator.vibrate(80);
+    }
+  }catch(e){}
+}
+
+/* 🔥 색상 */
 function getColor(n){
   if(n<=10) return "#fbc400";
   if(n<=20) return "#69c8f2";
@@ -254,18 +248,7 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 🔥 토스트 (유지 but 미사용) */
-function showToast(msg){
-  const toast=document.getElementById("toast");
-  toast.innerText=msg;
-  toast.style.display="block";
-
-  setTimeout(()=>{
-    toast.style.display="none";
-  },2000);
-}
-
-/* 🔥 검증 */
+/* 🔥 입력 검증 */
 function validateFixed(){
   let input=document.getElementById("fixed");
   let value=input.value;
@@ -274,17 +257,6 @@ function validateFixed(){
     input.value=value.replace(/[^0-9, ]/g,'');
     return;
   }
-
-  let nums=value.split(",")
-    .map(n=>n.trim())
-    .filter(n=>n!=="");
-
-  for(let n of nums){
-    let num=parseInt(n);
-    if(isNaN(num) || num<1 || num>45){
-      return;
-    }
-  }
 }
 
 /* 🔥 생성 */
@@ -292,65 +264,71 @@ function generate(){
 
   vibrate();
 
-  let count=parseInt(document.getElementById("count").value);
-  let fixedInput=document.getElementById("fixed").value;
-  let fixedCount=parseInt(document.getElementById("fixedCount").value);
+  try{
 
-  let fixed=fixedInput.split(",")
-    .map(n=>parseInt(n))
-    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+    let count=parseInt(document.getElementById("count").value) || 1;
+    let fixedInput=document.getElementById("fixed").value || "";
+    let fixedCount=parseInt(document.getElementById("fixedCount").value) || 0;
 
-  fixed=[...new Set(fixed)];
+    let fixed=fixedInput.split(",")
+      .map(n=>parseInt(n))
+      .filter(n=>!isNaN(n)&&n>=1&&n<=45);
 
-  document.getElementById("result").innerHTML=
-    `<div class="loading">🎰 생성 중...</div>`;
+    fixed=[...new Set(fixed)];
 
-  setTimeout(()=>{
+    document.getElementById("result").innerHTML =
+      `<div class="loading">🎰 생성 중...</div>`;
 
-    let output="";
+    setTimeout(()=>{
+      requestAnimationFrame(()=>{
 
-    for(let i=0;i<count;i++){
+        let output="";
 
-      let nums=[];
+        for(let i=0;i<count;i++){
 
-      if(i<fixedCount && fixed.length>0){
-        nums=[...fixed];
-      }
+          let nums=[];
 
-      while(nums.length<6){
-        let n=Math.floor(Math.random()*45)+1;
-        if(!nums.includes(n)) nums.push(n);
-      }
+          if(i<fixedCount && fixed.length>0){
+            nums=[...fixed];
+          }
 
-      nums.sort((a,b)=>a-b);
+          while(nums.length<6){
+            let n=Math.floor(Math.random()*45)+1;
+            if(!nums.includes(n)) nums.push(n);
+          }
 
-      let balls=nums.map(n=>
-        `<div class="ball" style="background:${getColor(n)}">${n}</div>`
-      ).join("");
+          nums.sort((a,b)=>a-b);
 
-      output+=`
-        <div class="line">
-          <div style="width:30px;opacity:0.6">${i+1}</div>
-          ${balls}
-        </div>
-      `;
+          let balls=nums.map(n=>
+            `<div class="ball" style="background:${getColor(n)}">${n}</div>`
+          ).join("");
 
-      saveHistory(nums);
-    }
+          output+=`
+            <div class="line">
+              <div style="width:30px;opacity:0.6">${i+1}</div>
+              ${balls}
+            </div>
+          `;
 
-    document.getElementById("result").innerHTML=output;
+          saveHistory(nums);
+        }
 
-  },500);
+        document.getElementById("result").innerHTML=output;
+
+      });
+    },300);
+
+  }catch(e){
+    console.log("error:",e);
+  }
 }
 
-/* 🔥 ⭐ 핵심 수정: 앱바 클릭 리프레시 */
+/* 🔥 리셋 */
 function resetApp(){
 
   vibrate();
 
   const container=document.querySelector(".container");
-
-  // 🔥 앱 느낌 리프레시 애니메이션
   container.classList.add("refresh");
 
   setTimeout(()=>{
