@@ -41,6 +41,8 @@ body{
   opacity:0.7;
   margin-bottom:6px;
 }
+
+/* 🔥 핵심 수정 시작 */
 input, select{
   width:100%;
   box-sizing:border-box;
@@ -52,6 +54,35 @@ input, select{
   font-size:15px;
   margin-top:6px;
 }
+
+/* 👉 select 전용 고급 UI */
+select{
+  appearance:none;
+  -webkit-appearance:none;
+  -moz-appearance:none;
+
+  padding-right:48px; /* 터치 영역 확보 */
+
+  background:
+    linear-gradient(145deg,#2c2c2e,#2c2c2e) padding-box,
+    linear-gradient(145deg,rgba(255,255,255,0.1),rgba(0,0,0,0.4)) border-box;
+
+  position:relative;
+
+  /* 커스텀 화살표 */
+  background-image: url("data:image/svg+xml;utf8,<svg fill='white' opacity='0.7' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat:no-repeat;
+  background-position:right 14px center;
+  background-size:20px;
+}
+
+/* 눌렀을 때 자연스러운 반응 */
+select:active{
+  transform:scale(0.98);
+}
+
+/* 🔥 핵심 수정 끝 */
+
 .btn{
   width:100%;
   padding:14px;
