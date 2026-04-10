@@ -1,13 +1,10 @@
 {
-  "name": "로또 번호 생성기~",
-  "short_name": "로또1등",
-  "start_url": "./index.html",
-  "scope": "./",
+  "name": "로또 생성기",
+  "short_name": "로또",
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#1f1f1f",
-  "theme_color": "#ffcc00",
-  "orientation": "portrait",
-  "description": "로또 번호를 생성해주는 앱",
+  "background_color": "#0f0f10",
+  "theme_color": "#0f0f10",
   "icons": [
     {
       "src": "icon-192.png",

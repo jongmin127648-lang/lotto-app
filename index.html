@@ -6,6 +6,11 @@
 
 <title>로또 앱</title>
 
+<!-- ✅ PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0f10">
+<link rel="apple-touch-icon" href="icon-192.png">
+
 <style>
 body{
   margin:0;
@@ -14,7 +19,6 @@ body{
   color:white;
 }
 
-/* 🔥 앱바 */
 .appbar{
   position:sticky;
   top:0;
@@ -122,24 +126,6 @@ input, select{
 @keyframes refreshAnim{
   40%{transform:scale(0.98); filter:blur(2px);}
 }
-
-/* 모바일 select 개선 */
-@media (max-width:768px){
-  select{
-    appearance:none;
-    -webkit-appearance:none;
-    padding-right:48px;
-
-    background-image:url("data:image/svg+xml;utf8,\
-    <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='white'>\
-    <path d='M5 7l5 5 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
-    </svg>");
-    
-    background-repeat:no-repeat;
-    background-position:right 14px center;
-    background-size:18px;
-  }
-}
 </style>
 </head>
 
@@ -173,6 +159,11 @@ input, select{
     </select>
 
     <button class="btn" onclick="generate()">🎰 로또 번호 생성기</button>
+
+    <!-- ✅ 설치 버튼 -->
+    <button id="installBtn" class="btn" style="display:none;">
+      📲 앱으로 설치하기
+    </button>
   </div>
 
   <div class="card">
@@ -188,8 +179,6 @@ input, select{
 </div>
 
 <script>
-
-/* 🔥 메모리 기반 히스토리 (저장 기능 제거) */
 let history = [];
 
 function saveHistory(nums){
@@ -203,38 +192,6 @@ function renderHistory(){
     history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
-/* 🔊 효과음 */
-let audioCtx;
-
-function playSound(){
-  try{
-    if(!audioCtx){
-      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    }
-
-    let now=audioCtx.currentTime;
-
-    for(let i=0;i<10;i++){
-      let osc=audioCtx.createOscillator();
-      let gain=audioCtx.createGain();
-
-      osc.type="square";
-      osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
-
-      gain.gain.setValueAtTime(0.15, now + i*0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(now + i*0.02);
-      osc.stop(now + i*0.02 + 0.05);
-    }
-
-  }catch(e){}
-}
-
-/* 색상 */
 function getColor(n){
   if(n<=10) return "#fbc400";
   if(n<=20) return "#69c8f2";
@@ -243,14 +200,10 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 생성 */
 function generate(){
-
-  playSound();
-
-  let count=parseInt(document.getElementById("count").value)||1;
-  let fixedInput=document.getElementById("fixed").value||"";
-  let fixedCount=parseInt(document.getElementById("fixedCount").value)||0;
+  let count=parseInt(countEl.value)||1;
+  let fixedInput=fixedEl.value||"";
+  let fixedCount=parseInt(fixedCountEl.value)||0;
 
   let fixed=fixedInput.split(",")
     .map(n=>parseInt(n))
@@ -258,20 +211,12 @@ function generate(){
 
   fixed=[...new Set(fixed)];
 
-  document.getElementById("result").innerHTML =
-    `<div class="loading">🎰 생성 중...</div>`;
+  result.innerHTML = `<div class="loading">🎰 생성 중...</div>`;
 
   setTimeout(()=>{
-
     let output="";
-
     for(let i=0;i<count;i++){
-
-      let nums=[];
-
-      if(i<fixedCount && fixed.length>0){
-        nums=[...fixed];
-      }
+      let nums = (i<fixedCount && fixed.length>0) ? [...fixed] : [];
 
       while(nums.length<6){
         let n=Math.floor(Math.random()*45)+1;
@@ -280,41 +225,54 @@ function generate(){
 
       nums.sort((a,b)=>a-b);
 
-      let balls=nums.map(n=>
-        `<div class="ball" style="background:${getColor(n)}">${n}</div>`
-      ).join("");
-
       output+=`
         <div class="line">
           <div style="width:30px;opacity:0.6">${i+1}</div>
-          ${balls}
+          ${nums.map(n=>`<div class="ball" style="background:${getColor(n)}">${n}</div>`).join("")}
         </div>
       `;
 
       saveHistory(nums);
     }
 
-    document.getElementById("result").innerHTML = output;
-
+    result.innerHTML = output;
   },300);
 }
 
-/* 리셋 */
 function resetApp(){
-  const container=document.querySelector(".container");
-  container.classList.add("refresh");
+  fixedEl.value="";
+  countEl.value="5";
+  fixedCountEl.value="0";
+  result.innerHTML="";
+}
 
-  setTimeout(()=>{
-    document.getElementById("fixed").value="";
-    document.getElementById("count").value="5";
-    document.getElementById("fixedCount").value="0";
-    document.getElementById("result").innerHTML="";
-    container.classList.remove("refresh");
-  },350);
+const countEl = document.getElementById("count");
+const fixedEl = document.getElementById("fixed");
+const fixedCountEl = document.getElementById("fixedCount");
+const result = document.getElementById("result");
+
+/* ✅ PWA 설치 */
+let deferredPrompt;
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "block";
+});
+
+installBtn.addEventListener("click", async () => {
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.style.display = "none";
+});
+
+/* ✅ 서비스워커 등록 */
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("sw.js");
 }
 
 renderHistory();
-
 </script>
 
 </body>
