@@ -42,7 +42,7 @@ body{
   margin-bottom:6px;
 }
 
-/* 🔥 핵심 수정 시작 */
+/* 기본 input */
 input, select{
   width:100%;
   box-sizing:border-box;
@@ -55,25 +55,39 @@ input, select{
   margin-top:6px;
 }
 
-/* 👉 select 전용 고급 UI */
-select{
-  appearance:none;
-  -webkit-appearance:none;
-  -moz-appearance:none;
+/* 🔥 모바일 전용 커스텀 select */
+@media (hover: none) and (pointer: coarse){
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
 
-  padding-right:48px; /* 터치 영역 확보 */
+    padding-right:48px;
 
-  background:
-    linear-gradient(145deg,#2c2c2e,#2c2c2e) padding-box,
-    linear-gradient(145deg,rgba(255,255,255,0.1),rgba(0,0,0,0.4)) border-box;
+    background-color:#2c2c2e;
 
-  position:relative;
+    /* 커스텀 화살표 */
+    background-image: url("data:image/svg+xml;utf8,<svg fill='white' opacity='0.7' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:20px;
+  }
 
-  /* 커스텀 화살표 */
-  background-image: url("data:image/svg+xml;utf8,<svg fill='white' opacity='0.7' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-  background-repeat:no-repeat;
-  background-position:right 14px center;
-  background-size:20px;
+  select:active{
+    transform:scale(0.98);
+  }
+}
+
+/* 🔥 PC(웹)에서는 기본 UI 유지 */
+@media (hover: hover) and (pointer: fine){
+  select{
+    appearance:auto;
+    -webkit-appearance:auto;
+    -moz-appearance:auto;
+
+    padding-right:14px;
+    background-image:none;
+  }
 }
 
 /* 눌렀을 때 자연스러운 반응 */
