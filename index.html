@@ -23,6 +23,7 @@ body{
   font-weight:bold;
   text-align:center;
   border-bottom:1px solid rgba(255,255,255,0.08);
+  cursor:pointer;
 }
 .container{
   padding:15px;
@@ -40,31 +41,9 @@ body{
   opacity:0.7;
   margin-bottom:6px;
 }
-
-/* 🔥 select 숨기고 커스텀 UI */
-select{
-  display:none;
-}
-
-.select-ui{
+input, select{
   width:100%;
-  padding:14px;
-  border-radius:12px;
-  background:#2c2c2e;
-  margin-top:6px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:15px;
-  cursor:pointer;
-}
-.select-ui::after{
-  content:"⌄";
-  opacity:0.6;
-}
-
-input{
-  width:100%;
+  box-sizing:border-box;
   padding:14px;
   border-radius:12px;
   border:none;
@@ -73,8 +52,6 @@ input{
   font-size:15px;
   margin-top:6px;
 }
-
-/* 버튼 */
 .btn{
   width:100%;
   padding:14px;
@@ -86,9 +63,11 @@ input{
   color:black;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
 }
-
-/* 결과 */
-.result{display:flex;flex-direction:column;gap:10px;}
+.result{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
 .line{
   background:rgba(255,255,255,0.05);
   padding:12px;
@@ -98,59 +77,41 @@ input{
   align-items:center;
 }
 .ball{
-  width:34px;height:34px;line-height:34px;
-  border-radius:50%;text-align:center;
-  margin:4px;font-size:14px;font-weight:bold;
-}
-
-/* 🔥 모달 */
-.modal{
-  position:fixed;
-  left:0; right:0; bottom:0;
-  background:#1c1c1e;
-  border-radius:20px 20px 0 0;
-  transform:translateY(100%);
-  transition:0.3s;
-  z-index:1000;
-}
-.modal.show{
-  transform:translateY(0);
-}
-.modal-item{
-  padding:16px;
+  width:34px;
+  height:34px;
+  line-height:34px;
+  border-radius:50%;
   text-align:center;
-  border-bottom:1px solid rgba(255,255,255,0.05);
+  margin:4px;
+  font-size:14px;
+  font-weight:bold;
 }
-.modal-item:active{
-  background:#333;
+.loading{
+  text-align:center;
+  padding:20px;
+  opacity:0.7;
 }
-
-/* 배경 */
-.overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.4);
-  backdrop-filter:blur(10px);
-  opacity:0;
-  pointer-events:none;
-  transition:0.3s;
+.history{
+  font-size:13px;
+  opacity:0.8;
 }
-.overlay.show{
-  opacity:1;
-  pointer-events:auto;
+.refresh{
+  animation:refreshAnim 0.35s ease;
+}
+@keyframes refreshAnim{
+  40%{transform:scale(0.98); filter:blur(2px);}
 }
 </style>
 </head>
 
 <body>
 
-<div class="appbar">🎲 로또 생성기</div>
+<div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
 
 <div class="container">
 
   <div class="card">
     <div class="label">로또 수량</div>
-    <div class="select-ui" onclick="openModal('count')">5줄</div>
     <select id="count">
       <option value="1">1줄</option>
       <option value="5" selected>5줄</option>
@@ -161,9 +122,8 @@ input{
     <input id="fixed" placeholder="예: 1,2,3,4">
 
     <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
-    <div class="select-ui" onclick="openModal('fixedCount')">고정 안함</div>
     <select id="fixedCount">
-      <option value="0">고정 안함</option>
+      <option value="0" selected>고정 안함</option>
       <option value="1">1줄</option>
       <option value="2">2줄</option>
       <option value="3">3줄</option>
@@ -181,79 +141,162 @@ input{
 
   <div class="card">
     <div class="label">최근 기록</div>
-    <div id="history"></div>
+    <div id="history" class="history"></div>
   </div>
 
 </div>
 
-<!-- 🔥 모달 -->
-<div class="overlay" onclick="closeModal()"></div>
-<div class="modal" id="modal"></div>
-
 <script>
 
-/* 🔥 모달 */
-let currentSelect;
-
-function openModal(id){
-  currentSelect=document.getElementById(id);
-  let modal=document.getElementById("modal");
-  modal.innerHTML="";
-
-  [...currentSelect.options].forEach(opt=>{
-    let div=document.createElement("div");
-    div.className="modal-item";
-    div.innerText=opt.text;
-    div.onclick=()=>{
-      currentSelect.value=opt.value;
-      updateUI();
-      closeModal();
-    };
-    modal.appendChild(div);
-  });
-
-  document.querySelector(".overlay").classList.add("show");
-  modal.classList.add("show");
+/* 🔥 카톡 대응 storage */
+let memoryHistory=[];
+let storage;
+try{
+  localStorage.setItem("t","1");
+  localStorage.removeItem("t");
+  storage=localStorage;
+}catch(e){
+  storage=null;
 }
 
-function closeModal(){
-  document.querySelector(".overlay").classList.remove("show");
-  document.getElementById("modal").classList.remove("show");
+let history=[];
+try{
+  history=storage?JSON.parse(storage.getItem("lottoHistory"))||[]:memoryHistory;
+}catch(e){history=[];}
+
+function saveHistory(nums){
+  history.unshift(nums);
+  if(history.length>10) history.pop();
+  try{
+    if(storage){
+      storage.setItem("lottoHistory",JSON.stringify(history));
+    }else{
+      memoryHistory=history;
+    }
+  }catch(e){}
+  renderHistory();
 }
 
-function updateUI(){
-  document.querySelectorAll(".select-ui").forEach((ui,i)=>{
-    let sel=document.querySelectorAll("select")[i];
-    ui.innerText=sel.options[sel.selectedIndex].text;
-  });
+function renderHistory(){
+  document.getElementById("history").innerHTML=
+    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
-/* 🔥 기존 로직 유지 */
+/* 🔊 효과음 */
+let audioCtx;
+
+function playSound(){
+  try{
+    if(!audioCtx){
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    }
+
+    let duration=0.4;
+    let now=audioCtx.currentTime;
+
+    for(let i=0;i<10;i++){
+      let osc=audioCtx.createOscillator();
+      let gain=audioCtx.createGain();
+
+      osc.type="square";
+      osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
+
+      gain.gain.setValueAtTime(0.15, now + i*0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now + i*0.02);
+      osc.stop(now + i*0.02 + 0.05);
+    }
+
+  }catch(e){}
+}
+
+/* 🔥 색상 */
 function getColor(n){
   if(n<=10) return "#fbc400";
   if(n<=20) return "#69c8f2";
   if(n<=30) return "#ff7272";
-  if(n<=40) return "#aaa";
+  if(n<=40) return "#aaaaaa";
   return "#b0d840";
 }
 
+/* 🔥 생성 */
 function generate(){
+
+  playSound(); // 🔊 여기서 효과음 실행
+
   let count=parseInt(document.getElementById("count").value)||1;
-  let result="";
-  for(let i=0;i<count;i++){
-    let nums=[];
-    while(nums.length<6){
-      let n=Math.floor(Math.random()*45)+1;
-      if(!nums.includes(n)) nums.push(n);
-    }
-    nums.sort((a,b)=>a-b);
-    let balls=nums.map(n=>`<div class="ball" style="background:${getColor(n)}">${n}</div>`).join("");
-    result+=`<div class="line">${balls}</div>`;
-  }
-  document.getElementById("result").innerHTML=result;
+  let fixedInput=document.getElementById("fixed").value||"";
+  let fixedCount=parseInt(document.getElementById("fixedCount").value)||0;
+
+  let fixed=fixedInput.split(",")
+    .map(n=>parseInt(n))
+    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+
+  fixed=[...new Set(fixed)];
+
+  document.getElementById("result").innerHTML=
+    `<div class="loading">🎰 생성 중...</div>`;
+
+  setTimeout(()=>{
+    requestAnimationFrame(()=>{
+
+      let output="";
+
+      for(let i=0;i<count;i++){
+
+        let nums=[];
+
+        if(i<fixedCount && fixed.length>0){
+          nums=[...fixed];
+        }
+
+        while(nums.length<6){
+          let n=Math.floor(Math.random()*45)+1;
+          if(!nums.includes(n)) nums.push(n);
+        }
+
+        nums.sort((a,b)=>a-b);
+
+        let balls=nums.map(n=>
+          `<div class="ball" style="background:${getColor(n)}">${n}</div>`
+        ).join("");
+
+        output+=`
+          <div class="line">
+            <div style="width:30px;opacity:0.6">${i+1}</div>
+            ${balls}
+          </div>
+        `;
+
+        saveHistory(nums);
+      }
+
+      document.getElementById("result").innerHTML=output;
+
+    });
+  },300);
 }
 
-updateUI();
+/* 🔥 리셋 */
+function resetApp(){
+  const container=document.querySelector(".container");
+  container.classList.add("refresh");
+
+  setTimeout(()=>{
+    document.getElementById("fixed").value="";
+    document.getElementById("count").value="5";
+    document.getElementById("fixedCount").value="0";
+    document.getElementById("result").innerHTML="";
+    container.classList.remove("refresh");
+  },350);
+}
+
+renderHistory();
+
 </script>
 
 </body>
