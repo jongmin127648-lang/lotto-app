@@ -52,14 +52,6 @@ input, select{
   font-size:15px;
   margin-top:6px;
 }
-
-/* 👉 모바일에서는 select 숨김 */
-@media (max-width:768px){
-  select{
-    display:none;
-  }
-}
-
 .btn{
   width:100%;
   padding:14px;
@@ -110,76 +102,48 @@ input, select{
   40%{transform:scale(0.98); filter:blur(2px);}
 }
 
-/* 🔥 iOS 스타일 버튼 */
-.ios-select{
-  margin-top:10px;
-  background:#2c2c2e;
-  padding:14px;
-  border-radius:12px;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  font-size:15px;
+/* 🔥🔥🔥 여기부터 추가된 부분 (모바일 select 개선) 🔥🔥🔥 */
+@media (max-width:768px){
+
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+
+    padding-right:48px;
+    background:#2c2c2e;
+    position:relative;
+
+    transition:all 0.2s ease;
+
+    background-image:url("data:image/svg+xml;utf8,\
+    <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='white'>\
+    <path d='M5 7l5 5 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
+    </svg>");
+    
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:18px;
+  }
+
+  select:focus{
+    outline:none;
+    box-shadow:0 0 0 2px rgba(255,214,10,0.3);
+  }
+
+  select:active{
+    transform:scale(0.99);
+    opacity:0.9;
+  }
 }
 
-/* 🔥 바텀시트 */
-.picker-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.4);
-  opacity:0;
-  pointer-events:none;
-  transition:0.25s;
+@media (min-width:769px){
+  select{
+    appearance:auto;
+    background-image:none;
+  }
 }
-
-.picker-sheet{
-  position:fixed;
-  bottom:-100%;
-  left:0;
-  width:100%;
-  background:#1c1c1e;
-  border-radius:20px 20px 0 0;
-  transition:0.3s;
-  z-index:10;
-}
-
-.picker-header{
-  display:flex;
-  justify-content:space-between;
-  padding:12px;
-}
-
-.picker-header button{
-  background:none;
-  border:none;
-  color:#ffd60a;
-  font-size:16px;
-}
-
-.picker-list{
-  max-height:300px;
-  overflow-y:auto;
-  text-align:center;
-}
-
-.picker-item{
-  padding:16px;
-  font-size:18px;
-}
-
-.picker-item.active{
-  color:#ffd60a;
-  font-weight:bold;
-}
-
-.picker-open .picker-overlay{
-  opacity:1;
-  pointer-events:auto;
-}
-
-.picker-open .picker-sheet{
-  bottom:0;
-}
+/* 🔥🔥🔥 추가 끝 🔥🔥🔥 */
 
 </style>
 </head>
@@ -192,26 +156,16 @@ input, select{
 
   <div class="card">
     <div class="label">로또 수량</div>
-
-    <!-- 기존 select 유지 -->
     <select id="count">
       <option value="1">1줄</option>
       <option value="5" selected>5줄</option>
       <option value="10">10줄</option>
     </select>
 
-    <!-- iOS 버튼 -->
-    <div class="ios-select" onclick="openPicker('count')">
-      <span>선택</span>
-      <div id="countText">5줄</div>
-    </div>
-
     <div class="label" style="margin-top:12px;">고정 번호</div>
     <input id="fixed" placeholder="예: 1,2,3,4">
 
     <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
-
-    <!-- 기존 select 유지 -->
     <select id="fixedCount">
       <option value="0" selected>고정 안함</option>
       <option value="1">1줄</option>
@@ -220,12 +174,6 @@ input, select{
       <option value="4">4줄</option>
       <option value="5">5줄</option>
     </select>
-
-    <!-- iOS 버튼 -->
-    <div class="ios-select" onclick="openPicker('fixedCount')">
-      <span>선택</span>
-      <div id="fixedCountText">고정 안함</div>
-    </div>
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
@@ -242,19 +190,9 @@ input, select{
 
 </div>
 
-<!-- 🔥 iOS Picker -->
-<div id="pickerSheet" class="picker-sheet">
-  <div class="picker-header">
-    <button onclick="closePicker()">취소</button>
-    <button onclick="applyPicker()">확인</button>
-  </div>
-  <div id="pickerList" class="picker-list"></div>
-</div>
-<div id="pickerOverlay" class="picker-overlay" onclick="closePicker()"></div>
-
 <script>
 
-/* 기존 코드 그대로 유지 */
+/* 🔥 카톡 대응 storage */
 let memoryHistory=[];
 let storage;
 try{
@@ -288,89 +226,38 @@ function renderHistory(){
     history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
-/* 🔥 iOS Picker JS */
-let currentPicker=null;
-let selectedValue=null;
-
-function openPicker(type){
-  currentPicker=type;
-  selectedValue=null;
-
-  let list=document.getElementById("pickerList");
-  list.innerHTML="";
-
-  let options=[];
-
-  if(type==="count"){
-    options=[{v:1,t:"1줄"},{v:5,t:"5줄"},{v:10,t:"10줄"}];
-  }
-
-  if(type==="fixedCount"){
-    options=[
-      {v:0,t:"고정 안함"},
-      {v:1,t:"1줄"},
-      {v:2,t:"2줄"},
-      {v:3,t:"3줄"},
-      {v:4,t:"4줄"},
-      {v:5,t:"5줄"}
-    ];
-  }
-
-  options.forEach(o=>{
-    let div=document.createElement("div");
-    div.className="picker-item";
-    div.innerText=o.t;
-
-    div.onclick=()=>{
-      document.querySelectorAll(".picker-item").forEach(i=>i.classList.remove("active"));
-      div.classList.add("active");
-      selectedValue=o;
-    };
-
-    list.appendChild(div);
-  });
-
-  document.body.classList.add("picker-open");
-}
-
-function closePicker(){
-  document.body.classList.remove("picker-open");
-}
-
-function applyPicker(){
-  if(!selectedValue) return closePicker();
-
-  let select=document.getElementById(currentPicker);
-  select.value=selectedValue.v;
-
-  document.getElementById(currentPicker+"Text").innerText=selectedValue.t;
-
-  closePicker();
-}
-
 /* 🔊 효과음 */
 let audioCtx;
+
 function playSound(){
   try{
     if(!audioCtx){
       audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     }
+
     let now=audioCtx.currentTime;
+
     for(let i=0;i<10;i++){
       let osc=audioCtx.createOscillator();
       let gain=audioCtx.createGain();
+
       osc.type="square";
       osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
+
       gain.gain.setValueAtTime(0.15, now + i*0.02);
       gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
+
       osc.connect(gain);
       gain.connect(audioCtx.destination);
+
       osc.start(now + i*0.02);
       osc.stop(now + i*0.02 + 0.05);
     }
+
   }catch(e){}
 }
 
+/* 🔥 색상 */
 function getColor(n){
   if(n<=10) return "#fbc400";
   if(n<=20) return "#69c8f2";
@@ -379,7 +266,9 @@ function getColor(n){
   return "#b0d840";
 }
 
+/* 🔥 생성 */
 function generate(){
+
   playSound();
 
   let count=parseInt(document.getElementById("count").value)||1;
@@ -392,23 +281,32 @@ function generate(){
 
   fixed=[...new Set(fixed)];
 
-  document.getElementById("result").innerHTML=`<div class="loading">🎰 생성 중...</div>`;
+  document.getElementById("result").innerHTML=
+    `<div class="loading">🎰 생성 중...</div>`;
 
   setTimeout(()=>{
     requestAnimationFrame(()=>{
+
       let output="";
+
       for(let i=0;i<count;i++){
+
         let nums=[];
+
         if(i<fixedCount && fixed.length>0){
           nums=[...fixed];
         }
+
         while(nums.length<6){
           let n=Math.floor(Math.random()*45)+1;
           if(!nums.includes(n)) nums.push(n);
         }
+
         nums.sort((a,b)=>a-b);
 
-        let balls=nums.map(n=>`<div class="ball" style="background:${getColor(n)}">${n}</div>`).join("");
+        let balls=nums.map(n=>
+          `<div class="ball" style="background:${getColor(n)}">${n}</div>`
+        ).join("");
 
         output+=`
           <div class="line">
@@ -421,10 +319,12 @@ function generate(){
       }
 
       document.getElementById("result").innerHTML=output;
+
     });
   },300);
 }
 
+/* 🔥 리셋 */
 function resetApp(){
   const container=document.querySelector(".container");
   container.classList.add("refresh");
