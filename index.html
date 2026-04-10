@@ -172,20 +172,28 @@ input, select{
   40%{transform:scale(0.98); filter:blur(2px);}
   100%{transform:scale(1); filter:blur(0);}
 }
+
+/* 🎰 슬롯 머신 회전 효과 (추가됨) */
+.spinning{
+  animation:spin 0.6s linear infinite;
+}
+
+@keyframes spin{
+  0%{transform:rotate(0deg) scale(1);}
+  50%{transform:rotate(180deg) scale(1.2);}
+  100%{transform:rotate(360deg) scale(1);}
+}
 </style>
 </head>
 
 <body>
 
-<!-- 🔥 상단 클릭 시 초기화 -->
 <div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
 
-<!-- 🔥 토스트 (유지하지만 안씀) -->
 <div id="toast" class="toast"></div>
 
 <div class="container">
 
-  <!-- 🔥 설정 -->
   <div class="card">
     <div class="label">로또 수량</div>
     <select id="count">
@@ -210,13 +218,11 @@ input, select{
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
 
-  <!-- 🔥 결과 -->
   <div class="card">
     <div class="label">결과</div>
     <div id="result" class="result"></div>
   </div>
 
-  <!-- 🔥 기록 -->
   <div class="card">
     <div class="label">최근 기록</div>
     <div id="history" class="history"></div>
@@ -254,7 +260,6 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 🔥 토스트 (유지 but 미사용) */
 function showToast(msg){
   const toast=document.getElementById("toast");
   toast.innerText=msg;
@@ -265,7 +270,6 @@ function showToast(msg){
   },2000);
 }
 
-/* 🔥 검증 */
 function validateFixed(){
   let input=document.getElementById("fixed");
   let value=input.value;
@@ -287,7 +291,7 @@ function validateFixed(){
   }
 }
 
-/* 🔥 생성 */
+/* 🎰 수정된 generate */
 function generate(){
 
   vibrate();
@@ -302,9 +306,26 @@ function generate(){
 
   fixed=[...new Set(fixed)];
 
-  document.getElementById("result").innerHTML=
-    `<div class="loading">🎰 생성 중...</div>`;
+  // 🎰 슬롯 애니메이션 먼저 출력
+  let fake="";
+  for(let i=0;i<count;i++){
+    let balls="";
+    for(let j=0;j<6;j++){
+      let r=Math.floor(Math.random()*45)+1;
+      balls+=`<div class="ball spinning" style="background:${getColor(r)}">${r}</div>`;
+    }
 
+    fake+=`
+      <div class="line">
+        <div style="width:30px;opacity:0.6">${i+1}</div>
+        ${balls}
+      </div>
+    `;
+  }
+
+  document.getElementById("result").innerHTML=fake;
+
+  // 🎯 실제 결과
   setTimeout(()=>{
 
     let output="";
@@ -340,28 +361,22 @@ function generate(){
 
     document.getElementById("result").innerHTML=output;
 
-  },500);
+  },1000);
 }
 
-/* 🔥 ⭐ 핵심 수정: 앱바 클릭 리프레시 */
 function resetApp(){
-
   vibrate();
 
   const container=document.querySelector(".container");
 
-  // 🔥 앱 느낌 리프레시 애니메이션
   container.classList.add("refresh");
 
   setTimeout(()=>{
-
     document.getElementById("fixed").value="";
     document.getElementById("count").value="5";
     document.getElementById("fixedCount").value="0";
     document.getElementById("result").innerHTML="";
-
     container.classList.remove("refresh");
-
   },350);
 }
 
