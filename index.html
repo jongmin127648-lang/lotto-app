@@ -28,11 +28,26 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
+  position:relative;
 }
 
 .title{
   text-align:center;
   cursor:pointer;
+}
+
+/* 🔥 설치 버튼 */
+.installBtn{
+  position:absolute;
+  right:12px;
+  padding:8px 12px;
+  font-size:12px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(145deg,#34c759,#28a745);
+  color:white;
+  font-weight:bold;
+  display:none;
 }
 
 .container{
@@ -129,15 +144,6 @@ input, select{
     appearance:none;
     -webkit-appearance:none;
     padding-right:48px;
-
-    background-image:url("data:image/svg+xml;utf8,\
-    <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='white'>\
-    <path d='M5 7l5 5 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
-    </svg>");
-    
-    background-repeat:no-repeat;
-    background-position:right 14px center;
-    background-size:18px;
   }
 }
 </style>
@@ -147,6 +153,7 @@ input, select{
 
 <div class="appbar">
   <div class="title" onclick="resetApp()">🎲 로또 생성기</div>
+  <button class="installBtn" id="installBtn">앱 설치</button>
 </div>
 
 <div class="container">
@@ -189,8 +196,50 @@ input, select{
 
 <script>
 
-/* 🔥 메모리 기반 히스토리 (저장 기능 제거) */
 let history = [];
+
+/* =======================
+   🔥 PWA 설치 기능 추가
+======================= */
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+// 모바일 Chrome 체크
+function isMobileChrome(){
+  const ua = navigator.userAgent;
+  return /Android/i.test(ua) && /Chrome/i.test(ua);
+}
+
+// 설치 가능 이벤트
+window.addEventListener("beforeinstallprompt", (e) => {
+  if(!isMobileChrome()) return;
+
+  e.preventDefault();
+  deferredPrompt = e;
+
+  installBtn.style.display = "block";
+});
+
+// 설치 버튼 클릭
+installBtn.addEventListener("click", async () => {
+  if(!deferredPrompt) return;
+
+  deferredPrompt.prompt();
+  const choice = await deferredPrompt.userChoice;
+
+  if(choice.outcome === "accepted"){
+    installBtn.style.display = "none";
+  }
+
+  deferredPrompt = null;
+});
+
+// 설치 완료 감지
+window.addEventListener("appinstalled", () => {
+  installBtn.style.display = "none";
+});
+
+/* ======================= */
 
 function saveHistory(nums){
   history.unshift(nums);
@@ -203,7 +252,6 @@ function renderHistory(){
     history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
-/* 🔊 효과음 */
 let audioCtx;
 
 function playSound(){
@@ -234,7 +282,6 @@ function playSound(){
   }catch(e){}
 }
 
-/* 색상 */
 function getColor(n){
   if(n<=10) return "#fbc400";
   if(n<=20) return "#69c8f2";
@@ -243,7 +290,6 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 생성 */
 function generate(){
 
   playSound();
@@ -299,7 +345,6 @@ function generate(){
   },300);
 }
 
-/* 리셋 */
 function resetApp(){
   const container=document.querySelector(".container");
   container.classList.add("refresh");
