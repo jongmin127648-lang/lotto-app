@@ -28,7 +28,6 @@ body{
 .container{
   padding:15px;
   padding-bottom:40px;
-  transition:all 0.2s ease;
 }
 .card{
   background:rgba(255,255,255,0.06);
@@ -63,10 +62,6 @@ input, select{
   font-weight:bold;
   color:black;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
-  box-shadow:0 10px 20px rgba(0,0,0,0.3);
-}
-.btn:active{
-  transform:scale(0.97);
 }
 .result{
   display:flex;
@@ -90,45 +85,21 @@ input, select{
   margin:4px;
   font-size:14px;
   font-weight:bold;
-  animation:pop 0.3s ease;
-}
-@keyframes pop{
-  0%{transform:scale(0);}
-  70%{transform:scale(1.2);}
-  100%{transform:scale(1);}
-}
-.history{
-  font-size:13px;
-  opacity:0.8;
-  line-height:1.6;
 }
 .loading{
   text-align:center;
   padding:20px;
   opacity:0.7;
 }
-.toast{
-  position:fixed;
-  top:80px;
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(255,0,0,0.9);
-  color:white;
-  padding:12px 18px;
-  border-radius:12px;
-  font-size:14px;
-  display:none;
-  z-index:9999;
-  max-width:90%;
-  text-align:center;
+.history{
+  font-size:13px;
+  opacity:0.8;
 }
 .refresh{
   animation:refreshAnim 0.35s ease;
 }
 @keyframes refreshAnim{
-  0%{transform:scale(1); filter:blur(0);}
   40%{transform:scale(0.98); filter:blur(2px);}
-  100%{transform:scale(1); filter:blur(0);}
 }
 </style>
 </head>
@@ -136,7 +107,6 @@ input, select{
 <body>
 
 <div class="appbar" onclick="resetApp()">🎲 로또 생성기</div>
-<div id="toast" class="toast"></div>
 
 <div class="container">
 
@@ -149,7 +119,7 @@ input, select{
     </select>
 
     <div class="label" style="margin-top:12px;">고정 번호</div>
-    <input id="fixed" placeholder="예: 1,2,3,4" oninput="validateFixed()">
+    <input id="fixed" placeholder="예: 1,2,3,4">
 
     <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
     <select id="fixedCount">
@@ -178,64 +148,69 @@ input, select{
 
 <script>
 
-/* 🔥 카톡 대응: 안전 저장소 */
-let memoryHistory = [];
-
-function getStorage(){
-  try{
-    const testKey="test";
-    localStorage.setItem(testKey,"1");
-    localStorage.removeItem(testKey);
-    return localStorage;
-  }catch(e){
-    return null;
-  }
-}
-
-const storage = getStorage();
-
-let history = [];
-
+/* 🔥 카톡 대응 storage */
+let memoryHistory=[];
+let storage;
 try{
-  if(storage){
-    history = JSON.parse(storage.getItem("lottoHistory")) || [];
-  }else{
-    history = memoryHistory;
-  }
+  localStorage.setItem("t","1");
+  localStorage.removeItem("t");
+  storage=localStorage;
 }catch(e){
-  history = [];
+  storage=null;
 }
 
-/* 🔥 저장 */
+let history=[];
+try{
+  history=storage?JSON.parse(storage.getItem("lottoHistory"))||[]:memoryHistory;
+}catch(e){history=[];}
+
 function saveHistory(nums){
   history.unshift(nums);
-  if(history.length > 10) history.pop();
-
+  if(history.length>10) history.pop();
   try{
     if(storage){
-      storage.setItem("lottoHistory", JSON.stringify(history));
+      storage.setItem("lottoHistory",JSON.stringify(history));
     }else{
-      memoryHistory = history;
+      memoryHistory=history;
     }
   }catch(e){}
-
   renderHistory();
 }
 
-/* 🔥 렌더 */
 function renderHistory(){
-  try{
-    document.getElementById("history").innerHTML =
-      history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
-  }catch(e){}
+  document.getElementById("history").innerHTML=
+    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
-/* 🔥 진동 */
-function vibrate(){
+/* 🔊 효과음 */
+let audioCtx;
+
+function playSound(){
   try{
-    if(navigator.vibrate){
-      navigator.vibrate(80);
+    if(!audioCtx){
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     }
+
+    let duration=0.4;
+    let now=audioCtx.currentTime;
+
+    for(let i=0;i<10;i++){
+      let osc=audioCtx.createOscillator();
+      let gain=audioCtx.createGain();
+
+      osc.type="square";
+      osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
+
+      gain.gain.setValueAtTime(0.15, now + i*0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now + i*0.02);
+      osc.stop(now + i*0.02 + 0.05);
+    }
+
   }catch(e){}
 }
 
@@ -248,98 +223,75 @@ function getColor(n){
   return "#b0d840";
 }
 
-/* 🔥 입력 검증 */
-function validateFixed(){
-  let input=document.getElementById("fixed");
-  let value=input.value;
-
-  if(/[^0-9, ]/.test(value)){
-    input.value=value.replace(/[^0-9, ]/g,'');
-    return;
-  }
-}
-
 /* 🔥 생성 */
 function generate(){
 
-  vibrate();
+  playSound(); // 🔊 여기서 효과음 실행
 
-  try{
+  let count=parseInt(document.getElementById("count").value)||1;
+  let fixedInput=document.getElementById("fixed").value||"";
+  let fixedCount=parseInt(document.getElementById("fixedCount").value)||0;
 
-    let count=parseInt(document.getElementById("count").value) || 1;
-    let fixedInput=document.getElementById("fixed").value || "";
-    let fixedCount=parseInt(document.getElementById("fixedCount").value) || 0;
+  let fixed=fixedInput.split(",")
+    .map(n=>parseInt(n))
+    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
 
-    let fixed=fixedInput.split(",")
-      .map(n=>parseInt(n))
-      .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+  fixed=[...new Set(fixed)];
 
-    fixed=[...new Set(fixed)];
+  document.getElementById("result").innerHTML=
+    `<div class="loading">🎰 생성 중...</div>`;
 
-    document.getElementById("result").innerHTML =
-      `<div class="loading">🎰 생성 중...</div>`;
+  setTimeout(()=>{
+    requestAnimationFrame(()=>{
 
-    setTimeout(()=>{
-      requestAnimationFrame(()=>{
+      let output="";
 
-        let output="";
+      for(let i=0;i<count;i++){
 
-        for(let i=0;i<count;i++){
+        let nums=[];
 
-          let nums=[];
-
-          if(i<fixedCount && fixed.length>0){
-            nums=[...fixed];
-          }
-
-          while(nums.length<6){
-            let n=Math.floor(Math.random()*45)+1;
-            if(!nums.includes(n)) nums.push(n);
-          }
-
-          nums.sort((a,b)=>a-b);
-
-          let balls=nums.map(n=>
-            `<div class="ball" style="background:${getColor(n)}">${n}</div>`
-          ).join("");
-
-          output+=`
-            <div class="line">
-              <div style="width:30px;opacity:0.6">${i+1}</div>
-              ${balls}
-            </div>
-          `;
-
-          saveHistory(nums);
+        if(i<fixedCount && fixed.length>0){
+          nums=[...fixed];
         }
 
-        document.getElementById("result").innerHTML=output;
+        while(nums.length<6){
+          let n=Math.floor(Math.random()*45)+1;
+          if(!nums.includes(n)) nums.push(n);
+        }
 
-      });
-    },300);
+        nums.sort((a,b)=>a-b);
 
-  }catch(e){
-    console.log("error:",e);
-  }
+        let balls=nums.map(n=>
+          `<div class="ball" style="background:${getColor(n)}">${n}</div>`
+        ).join("");
+
+        output+=`
+          <div class="line">
+            <div style="width:30px;opacity:0.6">${i+1}</div>
+            ${balls}
+          </div>
+        `;
+
+        saveHistory(nums);
+      }
+
+      document.getElementById("result").innerHTML=output;
+
+    });
+  },300);
 }
 
 /* 🔥 리셋 */
 function resetApp(){
-
-  vibrate();
-
   const container=document.querySelector(".container");
   container.classList.add("refresh");
 
   setTimeout(()=>{
-
     document.getElementById("fixed").value="";
     document.getElementById("count").value="5";
     document.getElementById("fixedCount").value="0";
     document.getElementById("result").innerHTML="";
-
     container.classList.remove("refresh");
-
   },350);
 }
 
