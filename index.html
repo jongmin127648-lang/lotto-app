@@ -28,6 +28,7 @@ body{
   display:flex;
   align-items:center;
   justify-content:center;
+  position:relative;
 }
 
 .title{
@@ -36,16 +37,17 @@ body{
 }
 
 /* ✅ 설치 버튼 */
-.installIcon{
+.appInstallBtn{
   position:absolute;
   right:16px;
   font-size:18px;
   cursor:pointer;
   opacity:0.8;
+  user-select:none;
 }
 
-.installIcon:active{
-  opacity:0.5;
+.appInstallBtn:active{
+  opacity:0.4;
 }
 
 .container{
@@ -142,15 +144,6 @@ input, select{
     appearance:none;
     -webkit-appearance:none;
     padding-right:48px;
-
-    background-image:url("data:image/svg+xml;utf8,\
-    <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='white'>\
-    <path d='M5 7l5 5 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
-    </svg>");
-    
-    background-repeat:no-repeat;
-    background-position:right 14px center;
-    background-size:18px;
   }
 }
 </style>
@@ -161,8 +154,7 @@ input, select{
 <!-- 🔥 앱바 -->
 <div class="appbar">
   <div class="title" onclick="resetApp()">🎲 로또 생성기</div>
-  <!-- ✅ 설치 버튼 -->
-  <div class="installIcon" id="installBtn" style="display:none;">⬇️</div>
+  <div class="appInstallBtn" id="installBtn" onclick="installApp()">⬇</div>
 </div>
 
 <div class="container">
@@ -205,9 +197,10 @@ input, select{
 
 <script>
 
-/* 🔥 카톡 대응 storage */
+/* 🔥 storage */
 let memoryHistory=[];
 let storage;
+
 try{
   localStorage.setItem("t","1");
   localStorage.removeItem("t");
@@ -219,11 +212,14 @@ try{
 let history=[];
 try{
   history=storage?JSON.parse(storage.getItem("lottoHistory"))||[]:memoryHistory;
-}catch(e){history=[];}
+}catch(e){
+  history=[];
+}
 
 function saveHistory(nums){
   history.unshift(nums);
   if(history.length>10) history.pop();
+
   try{
     if(storage){
       storage.setItem("lottoHistory",JSON.stringify(history));
@@ -231,6 +227,7 @@ function saveHistory(nums){
       memoryHistory=history;
     }
   }catch(e){}
+
   renderHistory();
 }
 
@@ -239,50 +236,8 @@ function renderHistory(){
     history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
-/* 🔊 효과음 */
-let audioCtx;
-
-function playSound(){
-  try{
-    if(!audioCtx){
-      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    }
-
-    let now=audioCtx.currentTime;
-
-    for(let i=0;i<10;i++){
-      let osc=audioCtx.createOscillator();
-      let gain=audioCtx.createGain();
-
-      osc.type="square";
-      osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
-
-      gain.gain.setValueAtTime(0.15, now + i*0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
-
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-
-      osc.start(now + i*0.02);
-      osc.stop(now + i*0.02 + 0.05);
-    }
-
-  }catch(e){}
-}
-
-/* 색상 */
-function getColor(n){
-  if(n<=10) return "#fbc400";
-  if(n<=20) return "#69c8f2";
-  if(n<=30) return "#ff7272";
-  if(n<=40) return "#aaaaaa";
-  return "#b0d840";
-}
-
-/* 생성 */
+/* 🎰 생성 */
 function generate(){
-
-  playSound();
 
   let count=parseInt(document.getElementById("count").value)||1;
   let fixedInput=document.getElementById("fixed").value||"";
@@ -317,7 +272,7 @@ function generate(){
       nums.sort((a,b)=>a-b);
 
       let balls=nums.map(n=>
-        `<div class="ball" style="background:${getColor(n)}">${n}</div>`
+        `<div class="ball" style="background:#ffcc00">${n}</div>`
       ).join("");
 
       output+=`
@@ -335,7 +290,7 @@ function generate(){
   },300);
 }
 
-/* 리셋 */
+/* 🔥 리셋 */
 function resetApp(){
   const container=document.querySelector(".container");
   container.classList.add("refresh");
@@ -349,29 +304,30 @@ function resetApp(){
   },350);
 }
 
-renderHistory();
-
-/* 🔥 PWA 설치 */
+/* 🔥 PWA install */
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  document.getElementById("installBtn").style.display = "block";
 });
 
-document.getElementById("installBtn").addEventListener("click", async () => {
-  if (!deferredPrompt) return;
+/* 버튼 클릭 */
+function installApp(){
 
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-});
+  if(deferredPrompt){
+    deferredPrompt.prompt();
 
-/* 🔥 Service Worker */
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js');
+    deferredPrompt.userChoice.then(()=>{
+      deferredPrompt = null;
+    });
+
+  } else {
+    alert("브라우저 메뉴 → '홈 화면에 추가'를 눌러 설치하세요.");
+  }
 }
+
+renderHistory();
 
 </script>
 
