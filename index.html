@@ -6,12 +6,7 @@
 
 <title>로또 앱</title>
 
-<!-- ✅ PWA -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#ffcc00">
-
 <style>
-/* 기존 그대로 유지 */
 body{
   margin:0;
   font-family:-apple-system, BlinkMacSystemFont, "Segoe UI";
@@ -35,21 +30,27 @@ body{
   justify-content:center;
 }
 
-.menuBtn{
-  position:absolute;
-  left:16px;
-  font-size:20px;
-  cursor:pointer;
-  opacity:0.8;
-}
-
 .title{
   text-align:center;
   cursor:pointer;
 }
 
+/* ✅ 설치 버튼 */
+.installIcon{
+  position:absolute;
+  right:16px;
+  font-size:18px;
+  cursor:pointer;
+  opacity:0.8;
+}
+
+.installIcon:active{
+  opacity:0.5;
+}
+
 .container{
   padding:15px;
+  padding-bottom:40px;
 }
 
 .card{
@@ -57,6 +58,25 @@ body{
   border-radius:18px;
   padding:18px;
   margin-bottom:12px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+.label{
+  font-size:13px;
+  opacity:0.7;
+  margin-bottom:6px;
+}
+
+input, select{
+  width:100%;
+  box-sizing:border-box;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  background:#2c2c2e;
+  color:white;
+  font-size:15px;
+  margin-top:6px;
 }
 
 .btn{
@@ -65,62 +85,273 @@ body{
   margin-top:14px;
   border:none;
   border-radius:14px;
+  font-size:14px;
   font-weight:bold;
   color:black;
   background:linear-gradient(145deg,#ffd60a,#ffb300);
 }
 
-.installBtn{
-  background:#00c853;
-  color:white;
+.result{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.line{
+  background:rgba(255,255,255,0.05);
+  padding:12px;
+  border-radius:14px;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.ball{
+  width:34px;
+  height:34px;
+  line-height:34px;
+  border-radius:50%;
+  text-align:center;
+  margin:4px;
+  font-size:14px;
+  font-weight:bold;
+}
+
+.loading{
+  text-align:center;
+  padding:20px;
+  opacity:0.7;
+}
+
+.history{
+  font-size:13px;
+  opacity:0.8;
+}
+
+.refresh{
+  animation:refreshAnim 0.35s ease;
+}
+
+@keyframes refreshAnim{
+  40%{transform:scale(0.98); filter:blur(2px);}
+}
+
+/* 모바일 select 개선 */
+@media (max-width:768px){
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    padding-right:48px;
+
+    background-image:url("data:image/svg+xml;utf8,\
+    <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='white'>\
+    <path d='M5 7l5 5 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
+    </svg>");
+    
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:18px;
+  }
 }
 </style>
 </head>
 
 <body>
 
+<!-- 🔥 앱바 -->
 <div class="appbar">
-  <div class="title">🎲 로또 생성기</div>
+  <div class="title" onclick="resetApp()">🎲 로또 생성기</div>
+  <!-- ✅ 설치 버튼 -->
+  <div class="installIcon" id="installBtn" style="display:none;">⬇️</div>
 </div>
 
 <div class="container">
 
   <div class="card">
-    <button class="btn" onclick="generate()">🎰 번호 생성</button>
+    <div class="label">로또 수량</div>
+    <select id="count">
+      <option value="1">1줄</option>
+      <option value="5" selected>5줄</option>
+      <option value="10">10줄</option>
+    </select>
 
-    <!-- 🔥 앱 설치 버튼 -->
-    <button class="btn installBtn" id="installBtn" style="display:none;">
-      📲 앱으로 설치하기
-    </button>
+    <div class="label" style="margin-top:12px;">고정 번호</div>
+    <input id="fixed" placeholder="예: 1,2,3,4">
 
-    <!-- 카카오 안내 -->
-    <div style="font-size:12px; opacity:0.6; margin-top:10px;">
-      ※ 카카오톡에서는 우측 상단 메뉴 → 홈 화면 추가
-    </div>
+    <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
+    <select id="fixedCount">
+      <option value="0" selected>고정 안함</option>
+      <option value="1">1줄 고정</option>
+      <option value="2">2줄 고정</option>
+      <option value="3">3줄 고정</option>
+      <option value="4">4줄 고정</option>
+      <option value="5">5줄 고정</option>
+    </select>
+
+    <button class="btn" onclick="generate()">🎰 로또 번호 생성기</button>
   </div>
 
   <div class="card">
-    <div id="result"></div>
+    <div class="label">결과</div>
+    <div id="result" class="result"></div>
+  </div>
+
+  <div class="card">
+    <div class="label">최근 기록</div>
+    <div id="history" class="history"></div>
   </div>
 
 </div>
 
 <script>
 
-/* 🎰 번호 생성 */
-function generate(){
-  let nums=[];
-  while(nums.length<6){
-    let n=Math.floor(Math.random()*45)+1;
-    if(!nums.includes(n)) nums.push(n);
-  }
-  nums.sort((a,b)=>a-b);
-
-  document.getElementById("result").innerHTML =
-    nums.join(" , ");
+/* 🔥 카톡 대응 storage */
+let memoryHistory=[];
+let storage;
+try{
+  localStorage.setItem("t","1");
+  localStorage.removeItem("t");
+  storage=localStorage;
+}catch(e){
+  storage=null;
 }
 
-/* 🔥 PWA 설치 로직 */
+let history=[];
+try{
+  history=storage?JSON.parse(storage.getItem("lottoHistory"))||[]:memoryHistory;
+}catch(e){history=[];}
+
+function saveHistory(nums){
+  history.unshift(nums);
+  if(history.length>10) history.pop();
+  try{
+    if(storage){
+      storage.setItem("lottoHistory",JSON.stringify(history));
+    }else{
+      memoryHistory=history;
+    }
+  }catch(e){}
+  renderHistory();
+}
+
+function renderHistory(){
+  document.getElementById("history").innerHTML=
+    history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
+}
+
+/* 🔊 효과음 */
+let audioCtx;
+
+function playSound(){
+  try{
+    if(!audioCtx){
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    }
+
+    let now=audioCtx.currentTime;
+
+    for(let i=0;i<10;i++){
+      let osc=audioCtx.createOscillator();
+      let gain=audioCtx.createGain();
+
+      osc.type="square";
+      osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
+
+      gain.gain.setValueAtTime(0.15, now + i*0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start(now + i*0.02);
+      osc.stop(now + i*0.02 + 0.05);
+    }
+
+  }catch(e){}
+}
+
+/* 색상 */
+function getColor(n){
+  if(n<=10) return "#fbc400";
+  if(n<=20) return "#69c8f2";
+  if(n<=30) return "#ff7272";
+  if(n<=40) return "#aaaaaa";
+  return "#b0d840";
+}
+
+/* 생성 */
+function generate(){
+
+  playSound();
+
+  let count=parseInt(document.getElementById("count").value)||1;
+  let fixedInput=document.getElementById("fixed").value||"";
+  let fixedCount=parseInt(document.getElementById("fixedCount").value)||0;
+
+  let fixed=fixedInput.split(",")
+    .map(n=>parseInt(n))
+    .filter(n=>!isNaN(n)&&n>=1&&n<=45);
+
+  fixed=[...new Set(fixed)];
+
+  document.getElementById("result").innerHTML=
+    `<div class="loading">🎰 생성 중...</div>`;
+
+  setTimeout(()=>{
+
+    let output="";
+
+    for(let i=0;i<count;i++){
+
+      let nums=[];
+
+      if(i<fixedCount && fixed.length>0){
+        nums=[...fixed];
+      }
+
+      while(nums.length<6){
+        let n=Math.floor(Math.random()*45)+1;
+        if(!nums.includes(n)) nums.push(n);
+      }
+
+      nums.sort((a,b)=>a-b);
+
+      let balls=nums.map(n=>
+        `<div class="ball" style="background:${getColor(n)}">${n}</div>`
+      ).join("");
+
+      output+=`
+        <div class="line">
+          <div style="width:30px;opacity:0.6">${i+1}</div>
+          ${balls}
+        </div>
+      `;
+
+      saveHistory(nums);
+    }
+
+    document.getElementById("result").innerHTML=output;
+
+  },300);
+}
+
+/* 리셋 */
+function resetApp(){
+  const container=document.querySelector(".container");
+  container.classList.add("refresh");
+
+  setTimeout(()=>{
+    document.getElementById("fixed").value="";
+    document.getElementById("count").value="5";
+    document.getElementById("fixedCount").value="0";
+    document.getElementById("result").innerHTML="";
+    container.classList.remove("refresh");
+  },350);
+}
+
+renderHistory();
+
+/* 🔥 PWA 설치 */
 let deferredPrompt;
 
 window.addEventListener('beforeinstallprompt', (e) => {
@@ -137,10 +368,9 @@ document.getElementById("installBtn").addEventListener("click", async () => {
   deferredPrompt = null;
 });
 
-/* 🔥 Service Worker 등록 */
+/* 🔥 Service Worker */
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js')
-    .then(()=>console.log("SW 등록 완료"));
+  navigator.serviceWorker.register('sw.js');
 }
 
 </script>
