@@ -95,38 +95,11 @@ input, select{
   font-size:13px;
   opacity:0.8;
 }
-
-/* 🔥 스위치 */
-.switch{
-  position:relative;
-  width:46px;
-  height:26px;
+.refresh{
+  animation:refreshAnim 0.35s ease;
 }
-.switch input{ display:none; }
-.slider{
-  position:absolute;
-  cursor:pointer;
-  top:0; left:0; right:0; bottom:0;
-  background:#555;
-  border-radius:34px;
-  transition:0.3s;
-}
-.slider:before{
-  position:absolute;
-  content:"";
-  height:20px;
-  width:20px;
-  left:3px;
-  bottom:3px;
-  background:white;
-  border-radius:50%;
-  transition:0.3s;
-}
-input:checked + .slider{
-  background:#ffd60a;
-}
-input:checked + .slider:before{
-  transform:translateX(20px);
+@keyframes refreshAnim{
+  40%{transform:scale(0.98); filter:blur(2px);}
 }
 </style>
 </head>
@@ -148,14 +121,15 @@ input:checked + .slider:before{
     <div class="label" style="margin-top:12px;">고정 번호</div>
     <input id="fixed" placeholder="예: 1,2,3,4">
 
-    <!-- 🔥 추가된 직관 UI -->
-    <div style="margin-top:12px; display:flex; justify-content:space-between; align-items:center;">
-      <div class="label">고정번호 사용</div>
-      <label class="switch">
-        <input type="checkbox" id="fixedToggle">
-        <span class="slider"></span>
-      </label>
-    </div>
+    <div class="label" style="margin-top:12px;">고정 번호 적용 줄</div>
+    <select id="fixedCount">
+      <option value="0" selected>고정 안함</option>
+      <option value="1">1줄</option>
+      <option value="2">2줄</option>
+      <option value="3">3줄</option>
+      <option value="4">4줄</option>
+      <option value="5">5줄</option>
+    </select>
 
     <button class="btn" onclick="generate()">🎰 번호 생성</button>
   </div>
@@ -174,7 +148,7 @@ input:checked + .slider:before{
 
 <script>
 
-/* 🔥 storage 대응 */
+/* 🔥 카톡 대응 storage */
 let memoryHistory=[];
 let storage;
 try{
@@ -210,24 +184,33 @@ function renderHistory(){
 
 /* 🔊 효과음 */
 let audioCtx;
+
 function playSound(){
   try{
     if(!audioCtx){
       audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     }
+
+    let duration=0.4;
     let now=audioCtx.currentTime;
+
     for(let i=0;i<10;i++){
       let osc=audioCtx.createOscillator();
       let gain=audioCtx.createGain();
+
       osc.type="square";
-      osc.frequency.setValueAtTime(200+i*30, now+i*0.02);
-      gain.gain.setValueAtTime(0.15, now+i*0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, now+i*0.02+0.05);
+      osc.frequency.setValueAtTime(200 + i*30, now + i*0.02);
+
+      gain.gain.setValueAtTime(0.15, now + i*0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + i*0.02 + 0.05);
+
       osc.connect(gain);
       gain.connect(audioCtx.destination);
-      osc.start(now+i*0.02);
-      osc.stop(now+i*0.02+0.05);
+
+      osc.start(now + i*0.02);
+      osc.stop(now + i*0.02 + 0.05);
     }
+
   }catch(e){}
 }
 
@@ -243,19 +226,17 @@ function getColor(n){
 /* 🔥 생성 */
 function generate(){
 
-  playSound();
+  playSound(); // 🔊 여기서 효과음 실행
 
   let count=parseInt(document.getElementById("count").value)||1;
   let fixedInput=document.getElementById("fixed").value||"";
-  let useFixed=document.getElementById("fixedToggle").checked;
+  let fixedCount=parseInt(document.getElementById("fixedCount").value)||0;
 
   let fixed=fixedInput.split(",")
     .map(n=>parseInt(n))
     .filter(n=>!isNaN(n)&&n>=1&&n<=45);
 
   fixed=[...new Set(fixed)];
-
-  if(fixed.length===0) useFixed=false;
 
   document.getElementById("result").innerHTML=
     `<div class="loading">🎰 생성 중...</div>`;
@@ -269,7 +250,7 @@ function generate(){
 
         let nums=[];
 
-        if(useFixed && fixed.length>0){
+        if(i<fixedCount && fixed.length>0){
           nums=[...fixed];
         }
 
@@ -281,11 +262,7 @@ function generate(){
         nums.sort((a,b)=>a-b);
 
         let balls=nums.map(n=>
-          `<div class="ball" 
-            style="background:${getColor(n)};
-            border:${fixed.includes(n)&&useFixed?'2px solid #fff':'none'}">
-            ${n}
-          </div>`
+          `<div class="ball" style="background:${getColor(n)}">${n}</div>`
         ).join("");
 
         output+=`
@@ -311,8 +288,8 @@ function resetApp(){
 
   setTimeout(()=>{
     document.getElementById("fixed").value="";
-    document.getElementById("fixedToggle").checked=false;
     document.getElementById("count").value="5";
+    document.getElementById("fixedCount").value="0";
     document.getElementById("result").innerHTML="";
     container.classList.remove("refresh");
   },350);
