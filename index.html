@@ -25,13 +25,32 @@ body{
   background:rgba(28,28,30,0.9);
   backdrop-filter: blur(20px);
   padding:16px;
-  font-size:18px;
-  font-weight:bold;
-  border-bottom:1px solid rgba(255,255,255,0.08);
 
   display:flex;
   align-items:center;
-  justify-content:center;
+}
+
+/* 🔥 가운데 고정 핵심 */
+.title{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  font-size:18px;
+  font-weight:bold;
+  cursor:pointer;
+  text-align:center;
+}
+
+/* 설치 버튼 */
+.install-btn{
+  background:linear-gradient(145deg,#ffd60a,#ffb300);
+  border:none;
+  padding:8px 12px;
+  border-radius:10px;
+  font-size:12px;
+  font-weight:bold;
+  color:black;
+  cursor:pointer;
 }
 
 .title{
@@ -132,7 +151,11 @@ input, select{
 <body>
 
 <div class="appbar">
+  <button id="installBtn" class="install-btn">📲 설치</button>
+
   <div class="title" onclick="resetApp()">🎲 로또 생성기</div>
+
+  <div style="width:60px;"></div> <!-- 오른쪽 균형용 -->
 </div>
 
 <div class="container">
