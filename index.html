@@ -145,7 +145,6 @@ input, select{
 
 <body>
 
-<!-- 🔥 앱바 -->
 <div class="appbar">
   <div class="title" onclick="resetApp()">🎲 로또 생성기</div>
 </div>
@@ -190,37 +189,17 @@ input, select{
 
 <script>
 
-/* 🔥 카톡 대응 storage */
-let memoryHistory=[];
-let storage;
-try{
-  localStorage.setItem("t","1");
-  localStorage.removeItem("t");
-  storage=localStorage;
-}catch(e){
-  storage=null;
-}
-
-let history=[];
-try{
-  history=storage?JSON.parse(storage.getItem("lottoHistory"))||[]:memoryHistory;
-}catch(e){history=[];}
+/* 🔥 메모리 기반 히스토리 (저장 기능 제거) */
+let history = [];
 
 function saveHistory(nums){
   history.unshift(nums);
-  if(history.length>10) history.pop();
-  try{
-    if(storage){
-      storage.setItem("lottoHistory",JSON.stringify(history));
-    }else{
-      memoryHistory=history;
-    }
-  }catch(e){}
+  if(history.length > 10) history.pop();
   renderHistory();
 }
 
 function renderHistory(){
-  document.getElementById("history").innerHTML=
+  document.getElementById("history").innerHTML =
     history.map((h,i)=>`${i+1}. ${h.join(", ")}`).join("<br>");
 }
 
@@ -279,7 +258,7 @@ function generate(){
 
   fixed=[...new Set(fixed)];
 
-  document.getElementById("result").innerHTML=
+  document.getElementById("result").innerHTML =
     `<div class="loading">🎰 생성 중...</div>`;
 
   setTimeout(()=>{
@@ -315,7 +294,7 @@ function generate(){
       saveHistory(nums);
     }
 
-    document.getElementById("result").innerHTML=output;
+    document.getElementById("result").innerHTML = output;
 
   },300);
 }
