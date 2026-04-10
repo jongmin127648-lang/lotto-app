@@ -101,6 +101,50 @@ input, select{
 @keyframes refreshAnim{
   40%{transform:scale(0.98); filter:blur(2px);}
 }
+
+/* 🔥🔥🔥 여기부터 추가된 부분 (모바일 select 개선) 🔥🔥🔥 */
+@media (max-width:768px){
+
+  select{
+    appearance:none;
+    -webkit-appearance:none;
+    -moz-appearance:none;
+
+    padding-right:48px;
+    background:#2c2c2e;
+    position:relative;
+
+    transition:all 0.2s ease;
+
+    background-image:url("data:image/svg+xml;utf8,\
+    <svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' fill='white'>\
+    <path d='M5 7l5 5 5-5' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/>\
+    </svg>");
+    
+    background-repeat:no-repeat;
+    background-position:right 14px center;
+    background-size:18px;
+  }
+
+  select:focus{
+    outline:none;
+    box-shadow:0 0 0 2px rgba(255,214,10,0.3);
+  }
+
+  select:active{
+    transform:scale(0.99);
+    opacity:0.9;
+  }
+}
+
+@media (min-width:769px){
+  select{
+    appearance:auto;
+    background-image:none;
+  }
+}
+/* 🔥🔥🔥 추가 끝 🔥🔥🔥 */
+
 </style>
 </head>
 
@@ -191,7 +235,6 @@ function playSound(){
       audioCtx=new (window.AudioContext||window.webkitAudioContext)();
     }
 
-    let duration=0.4;
     let now=audioCtx.currentTime;
 
     for(let i=0;i<10;i++){
@@ -226,7 +269,7 @@ function getColor(n){
 /* 🔥 생성 */
 function generate(){
 
-  playSound(); // 🔊 여기서 효과음 실행
+  playSound();
 
   let count=parseInt(document.getElementById("count").value)||1;
   let fixedInput=document.getElementById("fixed").value||"";
